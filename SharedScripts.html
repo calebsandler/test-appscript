@@ -1,0 +1,111 @@
+<script>
+  // Utility Functions
+  function formatNumber(num) {
+    // Handle null, undefined, empty string, and NaN
+    if (num === null || num === undefined || num === '') {
+      return '0';
+    }
+    var value = typeof num === 'number' ? num : parseFloat(num);
+    if (isNaN(value)) {
+      return '0';
+    }
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function formatCurrency(num) {
+    return '$' + formatNumber(num);
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Debounce utility
+  function debounce(func, wait) {
+    var timeout;
+    return function executedFunction() {
+      var context = this;
+      var args = arguments;
+      var later = function() {
+        timeout = null;
+        func.apply(context, args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // Loading State Management
+  function showLoading() {
+    var loadingEl = document.getElementById('loading');
+    if (loadingEl) {
+      loadingEl.classList.remove('hidden');
+    }
+  }
+
+  function hideLoading() {
+    var loadingEl = document.getElementById('loading');
+    if (loadingEl) {
+      loadingEl.classList.add('hidden');
+    }
+  }
+
+  // Toast Notifications
+  function showToast(message, type) {
+    var existingToast = document.querySelector('.toast');
+    if (existingToast) existingToast.remove();
+
+    var toast = document.createElement('div');
+    toast.className = 'toast ' + (type || '');
+    var icon = type === 'success' ? '&#10003;' :
+               type === 'error' ? '&#10007;' :
+               '&#9888;';
+    toast.innerHTML = '<span>' + icon + '</span><span>' + escapeHtml(message) + '</span>';
+    document.body.appendChild(toast);
+
+    setTimeout(function() {
+      toast.remove();
+    }, 3000);
+  }
+
+  // Error Handler
+  function handleError(error) {
+    hideLoading();
+    var message = error.message || error.toString() || 'An error occurred';
+    showToast(message, 'error');
+    console.error('Error:', error);
+  }
+
+  // Google Apps Script API Call Wrapper
+  function callServerFunction(functionName, args, successCallback, errorCallback) {
+    showLoading();
+
+    var runner = google.script.run
+      .withSuccessHandler(function(result) {
+        hideLoading();
+        if (successCallback) {
+          successCallback(result);
+        }
+      })
+      .withFailureHandler(function(error) {
+        hideLoading();
+        if (errorCallback) {
+          errorCallback(error);
+        } else {
+          handleError(error);
+        }
+      });
+
+    // Call the function with arguments
+    if (args && args.length > 0) {
+      runner[functionName].apply(runner, args);
+    } else {
+      runner[functionName]();
+    }
+  }
+</script>

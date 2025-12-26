@@ -1,0 +1,2668 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="UTF-8" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        /* Google-like colors */
+        --white: #ffffff;
+        --gray-50: #f8f9fa;
+        --gray-100: #f1f3f4;
+        --gray-200: #e8eaed;
+        --gray-300: #dadce0;
+        --gray-500: #9aa0a6;
+        --gray-700: #5f6368;
+        --gray-900: #202124;
+
+        /* Primary */
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+
+        /* Status */
+        --success: #34a853;
+        --error: #ea4335;
+        --warning: #fbbc04;
+
+        /* Typography */
+        --font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+
+        /* Spacing */
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 12px;
+        --space-lg: 16px;
+        --space-xl: 24px;
+        --space-2xl: 32px;
+
+        /* Border radius */
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --radius-full: 20px;
+
+        /* Sidebar width */
+        --sidebar-width: 200px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--font-family);
+        font-size: 13px;
+        background: var(--gray-50);
+        color: var(--gray-900);
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Main Layout */
+      .control-center {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      /* Header */
+      .cc-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-md) var(--space-xl);
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+        flex-shrink: 0;
+      }
+
+      .cc-header-left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+      }
+
+      .cc-back-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+        padding: var(--space-sm) var(--space-md);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        background: var(--white);
+        color: var(--gray-700);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .cc-back-btn:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-500);
+      }
+
+      .cc-title {
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--gray-900);
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+      }
+
+      .cc-title-icon {
+        width: 28px;
+        height: 28px;
+        background: var(--primary);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--white);
+      }
+
+      .cc-close-btn {
+        padding: var(--space-sm);
+        border: none;
+        background: none;
+        color: var(--gray-500);
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        transition: all 0.2s;
+      }
+
+      .cc-close-btn:hover {
+        background: var(--gray-100);
+        color: var(--gray-700);
+      }
+
+      /* Body Layout */
+      .cc-body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      /* Side Navigation */
+      .cc-sidebar {
+        width: var(--sidebar-width);
+        background: var(--white);
+        border-right: 1px solid var(--gray-200);
+        padding: var(--space-lg) 0;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .cc-nav {
+        flex: 1;
+      }
+
+      .cc-nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-md) var(--space-xl);
+        color: var(--gray-700);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        transition: all 0.15s;
+        border-left: 3px solid transparent;
+      }
+
+      .cc-nav-item:hover {
+        background: var(--gray-50);
+        color: var(--gray-900);
+      }
+
+      .cc-nav-item.active {
+        background: var(--primary-light);
+        color: var(--primary);
+        border-left-color: var(--primary);
+      }
+
+      .cc-nav-item i {
+        width: 20px;
+        height: 20px;
+        stroke-width: 1.5;
+      }
+
+      .cc-nav-divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: var(--space-md) var(--space-xl);
+      }
+
+      /* Main Content Area */
+      .cc-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      /* Selection Toolbar */
+      .cc-selection-bar {
+        display: none;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-sm) var(--space-xl);
+        background: var(--primary-light);
+        border-bottom: 1px solid var(--primary);
+      }
+
+      .cc-selection-bar.visible {
+        display: flex;
+      }
+
+      .cc-selection-count {
+        font-weight: 500;
+        color: var(--primary);
+      }
+
+      .cc-selection-actions {
+        display: flex;
+        gap: var(--space-sm);
+      }
+
+      .cc-selection-btn {
+        padding: var(--space-xs) var(--space-md);
+        border: 1px solid var(--primary);
+        border-radius: var(--radius-sm);
+        background: var(--white);
+        color: var(--primary);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .cc-selection-btn:hover {
+        background: var(--primary);
+        color: var(--white);
+      }
+
+      /* Content Area */
+      .cc-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--space-xl);
+      }
+
+      .cc-panel {
+        display: none;
+      }
+
+      .cc-panel.active {
+        display: block;
+      }
+
+      /* Cards Grid */
+      .cc-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-lg);
+        margin-bottom: var(--space-xl);
+      }
+
+      .cc-stat-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+      }
+
+      .cc-stat-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: var(--space-sm);
+      }
+
+      .cc-stat-value {
+        font-size: 24px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .cc-stat-change {
+        font-size: 12px;
+        margin-top: var(--space-xs);
+      }
+
+      .cc-stat-change.positive {
+        color: var(--success);
+      }
+
+      .cc-stat-change.negative {
+        color: var(--error);
+      }
+
+      /* Two Column Layout */
+      .cc-two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-xl);
+        margin-bottom: var(--space-xl);
+      }
+
+      /* Chart Container */
+      .cc-chart-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+      }
+
+      .cc-chart-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+        margin-bottom: var(--space-md);
+      }
+
+      .cc-chart-wrapper {
+        height: 250px;
+        position: relative;
+      }
+
+      /* Section */
+      .cc-section {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-xl);
+      }
+
+      .cc-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-md) var(--space-lg);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .cc-section-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .cc-section-body {
+        padding: var(--space-lg);
+      }
+
+      /* Filter Bar */
+      .cc-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: var(--space-md);
+        padding: var(--space-md) var(--space-lg);
+        background: var(--gray-50);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .cc-filter-btn {
+        padding: var(--space-sm) var(--space-md);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-full);
+        background: var(--white);
+        color: var(--gray-700);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .cc-filter-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .cc-filter-btn.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: var(--white);
+      }
+
+      .cc-filter-search {
+        flex: 1;
+        max-width: 300px;
+        padding: var(--space-sm) var(--space-md);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        outline: none;
+      }
+
+      .cc-filter-search:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary-light);
+      }
+
+      /* Item Grid */
+      .cc-items-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-md);
+      }
+
+      /* Selectable Item Card */
+      .cc-item-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        transition: all 0.15s;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .cc-item-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .cc-item-card.selected {
+        border-color: var(--primary);
+        background: var(--primary-light);
+      }
+
+      .cc-item-checkbox {
+        position: absolute;
+        top: var(--space-md);
+        left: var(--space-md);
+      }
+
+      .cc-item-checkbox input {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+
+      .cc-item-content {
+        padding-left: var(--space-xl);
+      }
+
+      .cc-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--space-sm);
+      }
+
+      .cc-item-title {
+        font-weight: 500;
+        color: var(--gray-900);
+        font-size: 13px;
+      }
+
+      .cc-item-meta {
+        display: flex;
+        gap: var(--space-sm);
+        flex-wrap: wrap;
+        margin-top: var(--space-sm);
+      }
+
+      .cc-meta-tag {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        background: var(--gray-100);
+        color: var(--gray-700);
+      }
+
+      .cc-meta-tag.price {
+        background: var(--primary);
+        color: var(--white);
+        font-weight: 500;
+      }
+
+      /* Status Badge */
+      .cc-status-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+        font-weight: 500;
+      }
+
+      .cc-status-badge.available {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+
+      .cc-status-badge.sold {
+        background: var(--gray-100);
+        color: var(--gray-700);
+      }
+
+      .cc-status-badge.reserved {
+        background: #fef7e0;
+        color: #e37400;
+      }
+
+      /* Margin Bar */
+      .cc-margin-bar {
+        height: 4px;
+        background: var(--gray-200);
+        border-radius: 2px;
+        margin-top: var(--space-sm);
+        overflow: hidden;
+      }
+
+      .cc-margin-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      .cc-margin-fill.excellent {
+        background: var(--success);
+      }
+
+      .cc-margin-fill.good {
+        background: #34a853;
+      }
+
+      .cc-margin-fill.fair {
+        background: var(--warning);
+      }
+
+      .cc-margin-fill.poor {
+        background: var(--error);
+      }
+
+      .cc-item-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--space-sm);
+        font-size: 11px;
+        color: var(--gray-500);
+      }
+
+      /* Bulk Action Bar */
+      .cc-bulk-bar {
+        display: none;
+        align-items: center;
+        gap: var(--space-lg);
+        padding: var(--space-md) var(--space-xl);
+        background: var(--gray-900);
+        color: var(--white);
+        flex-shrink: 0;
+      }
+
+      .cc-bulk-bar.visible {
+        display: flex;
+      }
+
+      .cc-bulk-count {
+        font-weight: 500;
+        min-width: 100px;
+      }
+
+      .cc-bulk-actions {
+        display: flex;
+        gap: var(--space-md);
+        flex: 1;
+      }
+
+      .cc-bulk-select {
+        padding: var(--space-sm) var(--space-md);
+        border: 1px solid var(--gray-500);
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--white);
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .cc-bulk-btn {
+        padding: var(--space-sm) var(--space-lg);
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .cc-bulk-btn.primary {
+        background: var(--primary);
+        color: var(--white);
+      }
+
+      .cc-bulk-btn.primary:hover {
+        background: var(--primary-dark);
+      }
+
+      .cc-bulk-btn.danger {
+        background: transparent;
+        color: var(--error);
+        border: 1px solid var(--error);
+      }
+
+      .cc-bulk-btn.danger:hover {
+        background: var(--error);
+        color: var(--white);
+      }
+
+      .cc-bulk-close {
+        margin-left: auto;
+        padding: var(--space-sm);
+        border: none;
+        background: none;
+        color: var(--gray-500);
+        cursor: pointer;
+      }
+
+      .cc-bulk-close:hover {
+        color: var(--white);
+      }
+
+      /* Pagination */
+      .cc-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-md);
+        padding: var(--space-lg);
+        border-top: 1px solid var(--gray-200);
+      }
+
+      .cc-page-btn {
+        padding: var(--space-sm) var(--space-md);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        background: var(--white);
+        color: var(--gray-700);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .cc-page-btn:hover:not(:disabled) {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .cc-page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .cc-page-info {
+        font-size: 13px;
+        color: var(--gray-500);
+      }
+
+      /* Settings Panel */
+      .cc-settings-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-xl);
+      }
+
+      .cc-settings-section {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+      }
+
+      .cc-settings-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+        margin-bottom: var(--space-lg);
+        padding-bottom: var(--space-sm);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .cc-form-group {
+        margin-bottom: var(--space-lg);
+      }
+
+      .cc-form-group:last-child {
+        margin-bottom: 0;
+      }
+
+      .cc-form-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: var(--space-sm);
+      }
+
+      .cc-form-input,
+      .cc-form-select {
+        width: 100%;
+        padding: var(--space-sm) var(--space-md);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-family: var(--font-family);
+        outline: none;
+        transition: all 0.15s;
+      }
+
+      .cc-form-input:focus,
+      .cc-form-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary-light);
+      }
+
+      .cc-form-hint {
+        font-size: 11px;
+        color: var(--gray-500);
+        margin-top: var(--space-xs);
+      }
+
+      /* Add Forms */
+      .cc-add-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-xl);
+      }
+
+      .cc-form-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+      }
+
+      .cc-form-header {
+        padding: var(--space-md) var(--space-lg);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .cc-form-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .cc-form-body {
+        padding: var(--space-lg);
+      }
+
+      .cc-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-md);
+      }
+
+      .cc-btn {
+        padding: var(--space-sm) var(--space-lg);
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .cc-btn-primary {
+        background: var(--primary);
+        color: var(--white);
+      }
+
+      .cc-btn-primary:hover {
+        background: var(--primary-dark);
+      }
+
+      .cc-btn-secondary {
+        background: var(--white);
+        color: var(--gray-700);
+        border: 1px solid var(--gray-300);
+      }
+
+      .cc-btn-secondary:hover {
+        background: var(--gray-50);
+      }
+
+      /* Health Score */
+      .cc-health-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+        margin-bottom: var(--space-xl);
+      }
+
+      .cc-health-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-md);
+      }
+
+      .cc-health-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .cc-health-score {
+        font-size: 32px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .cc-health-status {
+        font-size: 12px;
+        font-weight: 500;
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+      }
+
+      .cc-health-status.excellent {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+
+      .cc-health-status.good {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+
+      .cc-health-status.fair {
+        background: #fef7e0;
+        color: #e37400;
+      }
+
+      .cc-health-status.poor {
+        background: #fce8e6;
+        color: var(--error);
+      }
+
+      .cc-health-bar {
+        height: 8px;
+        background: var(--gray-200);
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: var(--space-lg);
+      }
+
+      .cc-health-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+
+      .cc-health-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-lg);
+        text-align: center;
+      }
+
+      .cc-health-metric-value {
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .cc-health-metric-label {
+        font-size: 11px;
+        color: var(--gray-500);
+        margin-top: 4px;
+      }
+
+      /* Action Items */
+      .cc-action-item {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-md);
+        padding: var(--space-md);
+        border-bottom: 1px solid var(--gray-100);
+      }
+
+      .cc-action-item:last-child {
+        border-bottom: none;
+      }
+
+      .cc-action-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-top: 6px;
+        flex-shrink: 0;
+      }
+
+      .cc-action-dot.high {
+        background: var(--error);
+      }
+
+      .cc-action-dot.medium {
+        background: var(--warning);
+      }
+
+      .cc-action-dot.low {
+        background: var(--success);
+      }
+
+      .cc-action-message {
+        font-size: 13px;
+        color: var(--gray-900);
+      }
+
+      .cc-action-detail {
+        font-size: 11px;
+        color: var(--gray-500);
+        margin-top: 2px;
+      }
+
+      /* Tools */
+      .cc-tools-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-lg);
+      }
+
+      .cc-tool-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .cc-tool-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      .cc-tool-icon {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto var(--space-md);
+        background: var(--primary-light);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+      }
+
+      .cc-tool-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+        margin-bottom: var(--space-xs);
+      }
+
+      .cc-tool-desc {
+        font-size: 12px;
+        color: var(--gray-500);
+      }
+
+      /* Weekly Sales Table */
+      .cc-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .cc-table th,
+      .cc-table td {
+        padding: var(--space-sm) var(--space-md);
+        text-align: left;
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .cc-table th {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        background: var(--gray-50);
+      }
+
+      .cc-table td {
+        font-size: 13px;
+        color: var(--gray-900);
+      }
+
+      /* Empty State */
+      .cc-empty-state {
+        text-align: center;
+        padding: var(--space-2xl);
+        color: var(--gray-500);
+      }
+
+      .cc-empty-icon {
+        font-size: 48px;
+        margin-bottom: var(--space-md);
+        opacity: 0.3;
+      }
+
+      .cc-empty-text {
+        font-size: 14px;
+      }
+
+      /* Loading */
+      .cc-loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+      }
+
+      .cc-loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: cc-spin 1s linear infinite;
+      }
+
+      @keyframes cc-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Toast */
+      .cc-toast {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: var(--space-md) var(--space-xl);
+        border-radius: var(--radius-md);
+        font-size: 13px;
+        font-weight: 500;
+        z-index: 1000;
+        animation: cc-toast-slide 0.3s ease;
+      }
+
+      .cc-toast.success {
+        background: var(--success);
+        color: var(--white);
+      }
+
+      .cc-toast.error {
+        background: var(--error);
+        color: var(--white);
+      }
+
+      .cc-toast.warning {
+        background: var(--warning);
+        color: var(--gray-900);
+      }
+
+      @keyframes cc-toast-slide {
+        from {
+          transform: translate(-50%, 100%);
+          opacity: 0;
+        }
+        to {
+          transform: translate(-50%, 0);
+          opacity: 1;
+        }
+      }
+
+      /* Sale Cards */
+      .cc-sale-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-sm);
+      }
+
+      .cc-sale-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--space-sm);
+      }
+
+      .cc-sale-item {
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .cc-sale-date {
+        font-size: 12px;
+        color: var(--gray-500);
+      }
+
+      .cc-sale-details {
+        display: flex;
+        gap: var(--space-md);
+        font-size: 12px;
+        color: var(--gray-700);
+      }
+
+      /* Skeleton */
+      .cc-skeleton {
+        background: linear-gradient(
+          90deg,
+          var(--gray-100) 25%,
+          var(--gray-200) 50%,
+          var(--gray-100) 75%
+        );
+        background-size: 200% 100%;
+        animation: cc-shimmer 1.5s infinite;
+        border-radius: var(--radius-sm);
+      }
+
+      @keyframes cc-shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="control-center">
+      <!-- Header -->
+      <header class="cc-header">
+        <div class="cc-header-left">
+          <button class="cc-back-btn" data-action="close">
+            <i data-lucide="arrow-left" style="width: 16px; height: 16px"></i>
+            Back to Sidebar
+          </button>
+          <div class="cc-title">
+            <span class="cc-title-icon">R</span>
+            Rosewood Control Center
+          </div>
+        </div>
+        <button class="cc-close-btn" data-action="close" title="Close">
+          <i data-lucide="x" style="width: 20px; height: 20px"></i>
+        </button>
+      </header>
+
+      <!-- Body -->
+      <div class="cc-body">
+        <!-- Side Navigation -->
+        <nav class="cc-sidebar">
+          <div class="cc-nav">
+            <button class="cc-nav-item active" data-panel="dashboard">
+              <i data-lucide="layout-dashboard"></i>
+              Dashboard
+            </button>
+            <button class="cc-nav-item" data-panel="inventory">
+              <i data-lucide="archive"></i>
+              Inventory
+            </button>
+            <button class="cc-nav-item" data-panel="sales">
+              <i data-lucide="receipt"></i>
+              Sales
+            </button>
+            <button class="cc-nav-item" data-panel="add">
+              <i data-lucide="plus-circle"></i>
+              Add New
+            </button>
+            <div class="cc-nav-divider"></div>
+            <button class="cc-nav-item" data-panel="tools">
+              <i data-lucide="wrench"></i>
+              Tools
+            </button>
+            <button class="cc-nav-item" data-panel="settings">
+              <i data-lucide="settings"></i>
+              Settings
+            </button>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="cc-main">
+          <!-- Selection Bar -->
+          <div class="cc-selection-bar" id="selection-bar">
+            <span class="cc-selection-count" id="selection-count">0 items selected</span>
+            <div class="cc-selection-actions">
+              <button class="cc-selection-btn" data-action="select-all">Select All</button>
+              <button class="cc-selection-btn" data-action="clear-selection">Clear</button>
+            </div>
+          </div>
+
+          <!-- Content Area -->
+          <div class="cc-content">
+            <!-- Dashboard Panel -->
+            <div id="dashboard-panel" class="cc-panel active">
+              <!-- Stats Cards -->
+              <div class="cc-cards-grid">
+                <div class="cc-stat-card">
+                  <div class="cc-stat-label">Weekly Revenue</div>
+                  <div class="cc-stat-value" id="stat-revenue">$0</div>
+                </div>
+                <div class="cc-stat-card">
+                  <div class="cc-stat-label">Total Items</div>
+                  <div class="cc-stat-value" id="stat-items">0</div>
+                </div>
+                <div class="cc-stat-card">
+                  <div class="cc-stat-label">Available</div>
+                  <div class="cc-stat-value" id="stat-available">0</div>
+                </div>
+                <div class="cc-stat-card">
+                  <div class="cc-stat-label">Inventory Value</div>
+                  <div class="cc-stat-value" id="stat-value">$0</div>
+                </div>
+              </div>
+
+              <!-- Health Score -->
+              <div class="cc-health-card">
+                <div class="cc-health-header">
+                  <div class="cc-health-title">Inventory Health</div>
+                  <div>
+                    <span class="cc-health-score" id="health-score">--</span>
+                    <span class="cc-health-status" id="health-status">Loading</span>
+                  </div>
+                </div>
+                <div class="cc-health-bar">
+                  <div class="cc-health-bar-fill" id="health-bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="cc-health-metrics">
+                  <div>
+                    <div class="cc-health-metric-value" id="metric-turnover">--</div>
+                    <div class="cc-health-metric-label">Turnover Rate</div>
+                  </div>
+                  <div>
+                    <div class="cc-health-metric-value" id="metric-aging">--</div>
+                    <div class="cc-health-metric-label">Aging Items</div>
+                  </div>
+                  <div>
+                    <div class="cc-health-metric-value" id="metric-margin">--</div>
+                    <div class="cc-health-metric-label">Blended Margin</div>
+                  </div>
+                  <div>
+                    <div class="cc-health-metric-value" id="metric-velocity">--</div>
+                    <div class="cc-health-metric-label">Avg Velocity</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Charts -->
+              <div class="cc-two-col">
+                <div class="cc-chart-card">
+                  <div class="cc-chart-title">Category Performance</div>
+                  <div class="cc-chart-wrapper">
+                    <canvas id="category-chart"></canvas>
+                  </div>
+                </div>
+                <div class="cc-chart-card">
+                  <div class="cc-chart-title">Weekly Revenue Trend</div>
+                  <div class="cc-chart-wrapper">
+                    <canvas id="revenue-chart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Items -->
+              <div class="cc-section">
+                <div class="cc-section-header">
+                  <div class="cc-section-title">Action Items</div>
+                  <span id="action-count" style="font-size: 12px; color: var(--gray-500)">0 items</span>
+                </div>
+                <div class="cc-section-body" id="action-items">
+                  <div class="cc-empty-state">
+                    <div class="cc-empty-text">All systems healthy</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inventory Panel -->
+            <div id="inventory-panel" class="cc-panel">
+              <div class="cc-section">
+                <div class="cc-filter-bar">
+                  <button class="cc-filter-btn active" data-filter="all">All</button>
+                  <button class="cc-filter-btn" data-filter="available">Available</button>
+                  <button class="cc-filter-btn" data-filter="new">New (7d)</button>
+                  <button class="cc-filter-btn" data-filter="aging">Aging (90d+)</button>
+                  <button class="cc-filter-btn" data-filter="high-margin">High Margin</button>
+                  <input type="text" class="cc-filter-search" placeholder="Search items..." id="inventory-search" />
+                </div>
+                <div class="cc-section-body">
+                  <div class="cc-items-grid" id="inventory-grid">
+                    <div class="cc-empty-state">
+                      <div class="cc-empty-text">Loading inventory...</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="cc-pagination" id="inventory-pagination"></div>
+              </div>
+            </div>
+
+            <!-- Sales Panel -->
+            <div id="sales-panel" class="cc-panel">
+              <div class="cc-section">
+                <div class="cc-section-header">
+                  <div class="cc-section-title">Recent Sales</div>
+                  <button class="cc-btn cc-btn-secondary" data-action="refresh-sales">
+                    <i data-lucide="refresh-cw" style="width: 14px; height: 14px"></i>
+                    Refresh
+                  </button>
+                </div>
+                <div class="cc-section-body" id="sales-list">
+                  <div class="cc-empty-state">
+                    <div class="cc-empty-text">Loading sales...</div>
+                  </div>
+                </div>
+                <div class="cc-pagination" id="sales-pagination"></div>
+              </div>
+            </div>
+
+            <!-- Add Panel -->
+            <div id="add-panel" class="cc-panel">
+              <div class="cc-add-grid">
+                <!-- Add Item Form -->
+                <div class="cc-form-card">
+                  <div class="cc-form-header">
+                    <div class="cc-form-title">Add New Item</div>
+                  </div>
+                  <div class="cc-form-body">
+                    <form id="add-item-form" data-action="submit-item">
+                      <div class="cc-form-group">
+                        <label class="cc-form-label">Item Name *</label>
+                        <input type="text" class="cc-form-input" name="name" required />
+                      </div>
+                      <div class="cc-form-row">
+                        <div class="cc-form-group">
+                          <label class="cc-form-label">Category</label>
+                          <select class="cc-form-select" name="category" id="cc-category-select">
+                            <option value="">Select...</option>
+                          </select>
+                        </div>
+                        <div class="cc-form-group">
+                          <label class="cc-form-label">Condition</label>
+                          <select class="cc-form-select" name="condition" id="cc-condition-select">
+                            <option value="">Select...</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="cc-form-row">
+                        <div class="cc-form-group">
+                          <label class="cc-form-label">Price *</label>
+                          <input type="number" class="cc-form-input" name="price" step="0.01" required />
+                        </div>
+                        <div class="cc-form-group">
+                          <label class="cc-form-label">Cost</label>
+                          <input type="number" class="cc-form-input" name="cost" step="0.01" />
+                        </div>
+                      </div>
+                      <div class="cc-form-row">
+                        <div class="cc-form-group">
+                          <label class="cc-form-label">Era</label>
+                          <select class="cc-form-select" name="era" id="cc-era-select">
+                            <option value="">Select...</option>
+                          </select>
+                        </div>
+                        <div class="cc-form-group">
+                          <label class="cc-form-label">Location</label>
+                          <select class="cc-form-select" name="location" id="cc-location-select">
+                            <option value="">Select...</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="cc-form-group">
+                        <label class="cc-form-label">Description</label>
+                        <textarea class="cc-form-input" name="description" rows="3"></textarea>
+                      </div>
+                      <button type="submit" class="cc-btn cc-btn-primary" style="width: 100%">Add Item</button>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Quick Sale Form -->
+                <div class="cc-form-card">
+                  <div class="cc-form-header">
+                    <div class="cc-form-title">Record Sale</div>
+                  </div>
+                  <div class="cc-form-body">
+                    <form id="add-sale-form" data-action="submit-sale">
+                      <div class="cc-form-group">
+                        <label class="cc-form-label">Item *</label>
+                        <select class="cc-form-select" name="itemId" id="cc-item-select" required>
+                          <option value="">Select item...</option>
+                        </select>
+                      </div>
+                      <div class="cc-form-row">
+                        <div class="cc-form-group">
+                          <label class="cc-form-label">Sale Price *</label>
+                          <input type="number" class="cc-form-input" name="price" id="cc-sale-price" step="0.01" required />
+                        </div>
+                        <div class="cc-form-group">
+                          <label class="cc-form-label">Payment Method</label>
+                          <select class="cc-form-select" name="paymentMethod" id="cc-payment-select">
+                            <option value="Cash">Cash</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="cc-form-group">
+                        <label class="cc-form-label">Customer</label>
+                        <select class="cc-form-select" name="customerId" id="cc-customer-select">
+                          <option value="">Walk-in Customer</option>
+                        </select>
+                      </div>
+                      <div class="cc-form-group">
+                        <label class="cc-form-label">Notes</label>
+                        <textarea class="cc-form-input" name="notes" rows="2"></textarea>
+                      </div>
+                      <button type="submit" class="cc-btn cc-btn-primary" style="width: 100%">Record Sale</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tools Panel -->
+            <div id="tools-panel" class="cc-panel">
+              <div class="cc-tools-grid">
+                <div class="cc-tool-card" data-action="export-csv">
+                  <div class="cc-tool-icon">
+                    <i data-lucide="download" style="width: 20px; height: 20px"></i>
+                  </div>
+                  <div class="cc-tool-name">Export CSV</div>
+                  <div class="cc-tool-desc">Download inventory data</div>
+                </div>
+                <div class="cc-tool-card" data-action="refresh-data">
+                  <div class="cc-tool-icon">
+                    <i data-lucide="refresh-cw" style="width: 20px; height: 20px"></i>
+                  </div>
+                  <div class="cc-tool-name">Refresh Data</div>
+                  <div class="cc-tool-desc">Reload all data</div>
+                </div>
+                <div class="cc-tool-card" data-action="refresh-cache">
+                  <div class="cc-tool-icon">
+                    <i data-lucide="database" style="width: 20px; height: 20px"></i>
+                  </div>
+                  <div class="cc-tool-name">Refresh Cache</div>
+                  <div class="cc-tool-desc">Update dashboard cache</div>
+                </div>
+                <div class="cc-tool-card" data-action="clear-caches">
+                  <div class="cc-tool-icon">
+                    <i data-lucide="trash-2" style="width: 20px; height: 20px"></i>
+                  </div>
+                  <div class="cc-tool-name">Clear Caches</div>
+                  <div class="cc-tool-desc">Reset all cached data</div>
+                </div>
+              </div>
+
+              <!-- Weekly Sales Summary -->
+              <div class="cc-section" style="margin-top: var(--space-xl)">
+                <div class="cc-section-header">
+                  <div class="cc-section-title">Weekly Sales Summary</div>
+                </div>
+                <div class="cc-section-body" id="weekly-sales-table">
+                  <div class="cc-empty-state">
+                    <div class="cc-empty-text">Loading weekly sales...</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Settings Panel -->
+            <div id="settings-panel" class="cc-panel">
+              <div class="cc-settings-grid">
+                <div class="cc-settings-section">
+                  <div class="cc-settings-title">Display Settings</div>
+                  <div class="cc-form-group">
+                    <label class="cc-form-label">Items Per Page</label>
+                    <select class="cc-form-select" id="setting-page-size">
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="30" selected>30</option>
+                      <option value="50">50</option>
+                    </select>
+                  </div>
+                  <div class="cc-form-group">
+                    <label class="cc-form-label">Currency Symbol</label>
+                    <select class="cc-form-select" id="setting-currency">
+                      <option value="$" selected>$ (USD)</option>
+                      <option value="GBP">GBP (British Pound)</option>
+                      <option value="EUR">EUR (Euro)</option>
+                    </select>
+                  </div>
+                  <div class="cc-form-group">
+                    <label class="cc-form-label">Date Format</label>
+                    <select class="cc-form-select" id="setting-date-format">
+                      <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
+                      <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="cc-settings-section">
+                  <div class="cc-settings-title">Business Rules</div>
+                  <div class="cc-form-group">
+                    <label class="cc-form-label">Low Margin Threshold (%)</label>
+                    <input type="number" class="cc-form-input" id="setting-low-margin" value="30" min="0" max="100" />
+                    <div class="cc-form-hint">Items below this margin will be flagged</div>
+                  </div>
+                  <div class="cc-form-group">
+                    <label class="cc-form-label">Aging Warning (Days)</label>
+                    <input type="number" class="cc-form-input" id="setting-aging-days" value="90" min="1" />
+                    <div class="cc-form-hint">Items older than this will show aging warning</div>
+                  </div>
+                  <div class="cc-form-group">
+                    <label class="cc-form-label">Default Location</label>
+                    <select class="cc-form-select" id="setting-default-location">
+                      <option value="">None</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top: var(--space-xl); display: flex; gap: var(--space-md);">
+                <button class="cc-btn cc-btn-primary" data-action="save-settings">Save Settings</button>
+                <button class="cc-btn cc-btn-secondary" data-action="reset-settings">Reset to Defaults</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk Action Bar -->
+          <div class="cc-bulk-bar" id="bulk-bar">
+            <span class="cc-bulk-count" id="bulk-count">0 selected</span>
+            <div class="cc-bulk-actions">
+              <select class="cc-bulk-select" id="bulk-status">
+                <option value="">Change Status...</option>
+                <option value="Available">Available</option>
+                <option value="Reserved">Reserved</option>
+                <option value="Sold">Sold</option>
+              </select>
+              <select class="cc-bulk-select" id="bulk-location">
+                <option value="">Move to...</option>
+              </select>
+              <button class="cc-bulk-btn primary" data-action="bulk-quick-sale">Quick Sale</button>
+              <button class="cc-bulk-btn danger" data-action="bulk-delete">Delete</button>
+            </div>
+            <button class="cc-bulk-close" data-action="clear-selection">
+              <i data-lucide="x" style="width: 20px; height: 20px"></i>
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="cc-loading-overlay hidden" id="loading-overlay">
+      <div class="cc-loading-spinner"></div>
+    </div>
+
+    <script>
+      // ============================================================================
+      // STATE MANAGEMENT
+      // ============================================================================
+      var State = {
+        config: null,
+        currentPanel: 'dashboard',
+        inventory: {
+          items: [],
+          allItems: [],
+          page: 1,
+          totalPages: 1,
+          pageSize: 30,
+          total: 0,
+          filter: 'all'
+        },
+        sales: {
+          items: [],
+          page: 1,
+          totalPages: 1
+        },
+        selection: {
+          items: [],
+          lastClickedIndex: -1
+        },
+        settings: {
+          pageSize: 30,
+          lowMarginThreshold: 30,
+          agingWarningDays: 90,
+          currency: '$',
+          dateFormat: 'MM/DD/YYYY',
+          defaultLocation: ''
+        },
+        availableItems: [],
+        isLoading: false
+      };
+
+      var charts = { category: null, revenue: null };
+
+      // ============================================================================
+      // INITIALIZATION
+      // ============================================================================
+      document.addEventListener('DOMContentLoaded', init);
+
+      function init() {
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+        setupEventDelegation();
+        loadConfig();
+        loadDashboard();
+      }
+
+      // ============================================================================
+      // EVENT DELEGATION
+      // ============================================================================
+      function setupEventDelegation() {
+        document.body.addEventListener('click', handleClick);
+        document.body.addEventListener('submit', handleSubmit);
+        document.body.addEventListener('change', handleChange);
+        document.body.addEventListener('keyup', handleKeyUp);
+      }
+
+      function handleClick(event) {
+        var target = event.target;
+        var actionEl = target.closest('[data-action]');
+        var action = actionEl ? actionEl.dataset.action : null;
+        var panelEl = target.closest('[data-panel]');
+        var filterEl = target.closest('[data-filter]');
+        var itemEl = target.closest('.cc-item-card');
+
+        // Panel switching
+        if (panelEl && panelEl.classList.contains('cc-nav-item')) {
+          switchPanel(panelEl.dataset.panel);
+          return;
+        }
+
+        // Filter buttons
+        if (filterEl && filterEl.classList.contains('cc-filter-btn')) {
+          applyFilter(filterEl.dataset.filter);
+          return;
+        }
+
+        // Item card click (selection)
+        if (itemEl && !target.closest('.cc-item-checkbox')) {
+          handleItemClick(event, itemEl);
+          return;
+        }
+
+        // Checkbox click
+        if (target.type === 'checkbox' && target.closest('.cc-item-checkbox')) {
+          var card = target.closest('.cc-item-card');
+          if (card) {
+            toggleSelection(card.dataset.itemId, target.checked);
+          }
+          return;
+        }
+
+        if (!action) return;
+
+        switch (action) {
+          case 'close':
+            google.script.host.close();
+            break;
+          case 'select-all':
+            selectAll();
+            break;
+          case 'clear-selection':
+            clearSelection();
+            break;
+          case 'bulk-delete':
+            bulkDelete();
+            break;
+          case 'bulk-quick-sale':
+            bulkQuickSale();
+            break;
+          case 'export-csv':
+            exportCSV();
+            break;
+          case 'refresh-data':
+            refreshData();
+            break;
+          case 'refresh-cache':
+            refreshCache();
+            break;
+          case 'clear-caches':
+            clearCaches();
+            break;
+          case 'refresh-sales':
+            loadSales();
+            break;
+          case 'save-settings':
+            saveSettings();
+            break;
+          case 'reset-settings':
+            resetSettings();
+            break;
+        }
+      }
+
+      function handleSubmit(event) {
+        var form = event.target;
+        var action = form.dataset.action;
+
+        if (!action) return;
+        event.preventDefault();
+
+        switch (action) {
+          case 'submit-item':
+            submitItem(form);
+            break;
+          case 'submit-sale':
+            submitSale(form);
+            break;
+        }
+      }
+
+      function handleChange(event) {
+        var target = event.target;
+
+        // Bulk status change
+        if (target.id === 'bulk-status' && target.value) {
+          bulkUpdateStatus(target.value);
+          target.value = '';
+        }
+
+        // Bulk location change
+        if (target.id === 'bulk-location' && target.value) {
+          bulkMoveLocation(target.value);
+          target.value = '';
+        }
+
+        // Item select for sale
+        if (target.id === 'cc-item-select') {
+          updateSalePrice();
+        }
+      }
+
+      function handleKeyUp(event) {
+        var target = event.target;
+
+        if (target.id === 'inventory-search') {
+          filterInventoryBySearch(target.value);
+        }
+      }
+
+      // ============================================================================
+      // NAVIGATION
+      // ============================================================================
+      function switchPanel(panelId) {
+        State.currentPanel = panelId;
+
+        document.querySelectorAll('.cc-nav-item').forEach(function(item) {
+          item.classList.remove('active');
+        });
+        document.querySelector('.cc-nav-item[data-panel="' + panelId + '"]').classList.add('active');
+
+        document.querySelectorAll('.cc-panel').forEach(function(panel) {
+          panel.classList.remove('active');
+        });
+        document.getElementById(panelId + '-panel').classList.add('active');
+
+        // Load data for panel
+        if (panelId === 'inventory') loadInventory();
+        if (panelId === 'sales') loadSales();
+        if (panelId === 'add') loadFormDropdowns();
+        if (panelId === 'tools') loadWeeklySales();
+        if (panelId === 'settings') loadSettingsDropdowns();
+      }
+
+      // ============================================================================
+      // DATA LOADING
+      // ============================================================================
+      function loadConfig() {
+        google.script.run
+          .withSuccessHandler(function(config) {
+            State.config = config;
+          })
+          .withFailureHandler(handleError)
+          .getConfig();
+      }
+
+      function loadDashboard() {
+        google.script.run
+          .withSuccessHandler(renderDashboard)
+          .withFailureHandler(handleError)
+          .getDashboardV2();
+      }
+
+      function loadInventory(page) {
+        page = page || State.inventory.page;
+        showLoading();
+
+        google.script.run
+          .withSuccessHandler(function(data) {
+            hideLoading();
+            State.inventory.items = data.items || [];
+            State.inventory.allItems = data.items || [];
+            State.inventory.page = data.page;
+            State.inventory.totalPages = data.totalPages;
+            State.inventory.total = data.total;
+            renderInventory();
+          })
+          .withFailureHandler(handleError)
+          .getInventory({ page: page, pageSize: State.settings.pageSize });
+      }
+
+      function loadSales(page) {
+        page = page || State.sales.page;
+        showLoading();
+
+        google.script.run
+          .withSuccessHandler(function(data) {
+            hideLoading();
+            State.sales.items = data.sales || [];
+            State.sales.page = data.page;
+            State.sales.totalPages = data.totalPages;
+            renderSales();
+          })
+          .withFailureHandler(handleError)
+          .getSales({ page: page, pageSize: State.settings.pageSize });
+      }
+
+      function loadFormDropdowns() {
+        // Categories
+        google.script.run
+          .withSuccessHandler(function(categories) {
+            var select = document.getElementById('cc-category-select');
+            select.innerHTML = '<option value="">Select...</option>';
+            categories.forEach(function(cat) {
+              var opt = document.createElement('option');
+              opt.value = cat.Category_ID;
+              opt.textContent = cat.Name;
+              select.appendChild(opt);
+            });
+          })
+          .getCategoriesList();
+
+        // Locations
+        google.script.run
+          .withSuccessHandler(function(locations) {
+            var select = document.getElementById('cc-location-select');
+            select.innerHTML = '<option value="">Select...</option>';
+            locations.forEach(function(loc) {
+              var opt = document.createElement('option');
+              opt.value = loc.Location_ID;
+              opt.textContent = loc.Name;
+              select.appendChild(opt);
+            });
+
+            // Also populate bulk location
+            var bulkSelect = document.getElementById('bulk-location');
+            bulkSelect.innerHTML = '<option value="">Move to...</option>';
+            locations.forEach(function(loc) {
+              var opt = document.createElement('option');
+              opt.value = loc.Location_ID;
+              opt.textContent = loc.Name;
+              bulkSelect.appendChild(opt);
+            });
+          })
+          .getLocations();
+
+        // Config-based dropdowns
+        if (State.config) {
+          populateConfigDropdowns();
+        } else {
+          google.script.run
+            .withSuccessHandler(function(config) {
+              State.config = config;
+              populateConfigDropdowns();
+            })
+            .getConfig();
+        }
+
+        // Available items for sale
+        google.script.run
+          .withSuccessHandler(function(items) {
+            State.availableItems = items;
+            var select = document.getElementById('cc-item-select');
+            select.innerHTML = '<option value="">Select item...</option>';
+            items.forEach(function(item) {
+              var opt = document.createElement('option');
+              opt.value = item.id;
+              opt.textContent = item.name + ' - $' + formatNumber(item.price);
+              opt.dataset.price = item.price;
+              select.appendChild(opt);
+            });
+          })
+          .getAvailableItems();
+
+        // Customers
+        google.script.run
+          .withSuccessHandler(function(customers) {
+            var select = document.getElementById('cc-customer-select');
+            select.innerHTML = '<option value="">Walk-in Customer</option>';
+            customers.forEach(function(cust) {
+              var opt = document.createElement('option');
+              opt.value = cust.Customer_ID;
+              opt.textContent = cust.Name;
+              select.appendChild(opt);
+            });
+          })
+          .getCustomers();
+      }
+
+      function populateConfigDropdowns() {
+        var config = State.config;
+
+        // Conditions
+        var conditionSelect = document.getElementById('cc-condition-select');
+        if (conditionSelect) {
+          conditionSelect.innerHTML = '<option value="">Select...</option>';
+          config.conditions.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            conditionSelect.appendChild(opt);
+          });
+        }
+
+        // Eras
+        var eraSelect = document.getElementById('cc-era-select');
+        if (eraSelect) {
+          eraSelect.innerHTML = '<option value="">Select...</option>';
+          config.eras.forEach(function(e) {
+            var opt = document.createElement('option');
+            opt.value = e;
+            opt.textContent = e;
+            eraSelect.appendChild(opt);
+          });
+        }
+
+        // Payment methods
+        var paymentSelect = document.getElementById('cc-payment-select');
+        if (paymentSelect) {
+          paymentSelect.innerHTML = '';
+          config.paymentMethods.forEach(function(p) {
+            var opt = document.createElement('option');
+            opt.value = p;
+            opt.textContent = p;
+            paymentSelect.appendChild(opt);
+          });
+        }
+      }
+
+      function loadSettingsDropdowns() {
+        google.script.run
+          .withSuccessHandler(function(locations) {
+            var select = document.getElementById('setting-default-location');
+            select.innerHTML = '<option value="">None</option>';
+            locations.forEach(function(loc) {
+              var opt = document.createElement('option');
+              opt.value = loc.Location_ID;
+              opt.textContent = loc.Name;
+              select.appendChild(opt);
+            });
+          })
+          .getLocations();
+      }
+
+      function loadWeeklySales() {
+        google.script.run
+          .withSuccessHandler(function(weeks) {
+            var container = document.getElementById('weekly-sales-table');
+            if (!weeks || weeks.length === 0) {
+              container.innerHTML = '<div class="cc-empty-state"><div class="cc-empty-text">No sales data</div></div>';
+              return;
+            }
+
+            var html = '<table class="cc-table"><thead><tr>' +
+              '<th>Week</th><th>Items Sold</th><th>Revenue</th><th>Avg Price</th>' +
+              '</tr></thead><tbody>';
+
+            weeks.forEach(function(w) {
+              html += '<tr>' +
+                '<td>' + w.Week_ID + '</td>' +
+                '<td>' + w.Items_Sold + '</td>' +
+                '<td>$' + formatNumber(w.Total_Revenue) + '</td>' +
+                '<td>$' + formatNumber(w.Average_Price) + '</td>' +
+                '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+          })
+          .withFailureHandler(handleError)
+          .getWeeklySales(12);
+      }
+
+      // ============================================================================
+      // RENDERING
+      // ============================================================================
+      function renderDashboard(data) {
+        var inv = data.inventory || {};
+        var sales = data.sales || {};
+
+        // Stats
+        document.getElementById('stat-revenue').textContent = '$' + formatNumber(sales.weeklyRevenue || 0);
+        document.getElementById('stat-items').textContent = inv.totalItems || 0;
+        document.getElementById('stat-available').textContent = inv.availableItems || 0;
+        document.getElementById('stat-value').textContent = '$' + formatNumber(inv.totalValue || 0);
+
+        // Health Score
+        var healthScore = data.inventoryHealthScore || 0;
+        document.getElementById('health-score').textContent = healthScore + '/100';
+
+        var statusEl = document.getElementById('health-status');
+        var barEl = document.getElementById('health-bar-fill');
+        var status, color;
+
+        if (healthScore >= 81) {
+          status = 'Excellent'; color = '#34a853';
+          statusEl.className = 'cc-health-status excellent';
+        } else if (healthScore >= 61) {
+          status = 'Good'; color = '#34a853';
+          statusEl.className = 'cc-health-status good';
+        } else if (healthScore >= 41) {
+          status = 'Fair'; color = '#fbbc04';
+          statusEl.className = 'cc-health-status fair';
+        } else {
+          status = 'Needs Attention'; color = '#ea4335';
+          statusEl.className = 'cc-health-status poor';
+        }
+
+        statusEl.textContent = status;
+        barEl.style.width = healthScore + '%';
+        barEl.style.background = color;
+
+        // Metrics
+        document.getElementById('metric-turnover').textContent = (data.turnoverRate || 0) + 'x';
+        document.getElementById('metric-aging').textContent = data.agingItemCount || 0;
+        document.getElementById('metric-margin').textContent = (data.blendedMargin || 0) + '%';
+        document.getElementById('metric-velocity').textContent = (data.averageVelocity || 0).toFixed(1) + '/wk';
+
+        // Action Items
+        renderActionItems(data.actionItems || []);
+
+        // Charts
+        initCharts(data);
+      }
+
+      function renderActionItems(items) {
+        var container = document.getElementById('action-items');
+        document.getElementById('action-count').textContent = items.length + ' items';
+
+        if (!items || items.length === 0) {
+          container.innerHTML = '<div class="cc-empty-state"><div class="cc-empty-text">All systems healthy</div></div>';
+          return;
+        }
+
+        container.innerHTML = items.map(function(item) {
+          return '<div class="cc-action-item">' +
+            '<div class="cc-action-dot ' + item.priority + '"></div>' +
+            '<div>' +
+              '<div class="cc-action-message">' + escapeHtml(item.message) + '</div>' +
+              (item.detail ? '<div class="cc-action-detail">' + escapeHtml(item.detail) + '</div>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      function initCharts(data) {
+        // Category Chart
+        var catCanvas = document.getElementById('category-chart');
+        if (charts.category) charts.category.destroy();
+
+        var catData = data.categoryPerformance || [];
+        charts.category = new Chart(catCanvas, {
+          type: 'bar',
+          data: {
+            labels: catData.map(function(c) { return c.category || 'Other'; }),
+            datasets: [{
+              label: 'Revenue',
+              data: catData.map(function(c) { return c.revenue30d || 0; }),
+              backgroundColor: '#1a73e8'
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false } },
+              y: { grid: { display: false } }
+            }
+          }
+        });
+
+        // Revenue Chart
+        var revCanvas = document.getElementById('revenue-chart');
+        if (charts.revenue) charts.revenue.destroy();
+
+        var revData = data.weeklyRevenue || [];
+        charts.revenue = new Chart(revCanvas, {
+          type: 'line',
+          data: {
+            labels: revData.map(function(w) { return w.week || ''; }),
+            datasets: [{
+              label: 'Revenue',
+              data: revData.map(function(w) { return w.revenue || 0; }),
+              borderColor: '#1a73e8',
+              backgroundColor: 'rgba(26, 115, 232, 0.1)',
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false } },
+              y: { grid: { color: '#e8eaed' } }
+            }
+          }
+        });
+      }
+
+      function renderInventory() {
+        var items = State.inventory.items;
+        var container = document.getElementById('inventory-grid');
+
+        if (!items || items.length === 0) {
+          container.innerHTML = '<div class="cc-empty-state"><div class="cc-empty-text">No items found</div></div>';
+          renderPagination('inventory');
+          return;
+        }
+
+        container.innerHTML = items.map(function(item, index) {
+          var isSelected = State.selection.items.indexOf(item.Item_ID) !== -1;
+          return renderItemCard(item, index, isSelected);
+        }).join('');
+
+        renderPagination('inventory');
+        lucide.createIcons();
+      }
+
+      function renderItemCard(item, index, isSelected) {
+        var statusClass = (item.Status || 'available').toLowerCase().replace(' ', '-');
+        var margin = item.Cost > 0 ? Math.round(((item.Price - item.Cost) / item.Price) * 100) : 0;
+        var marginClass = margin >= 50 ? 'excellent' : margin >= 30 ? 'good' : margin >= 15 ? 'fair' : 'poor';
+
+        // Calculate aging
+        var daysOld = 0;
+        if (item.Date_Added) {
+          daysOld = Math.floor((new Date() - new Date(item.Date_Added)) / (1000 * 60 * 60 * 24));
+        }
+
+        return '<div class="cc-item-card' + (isSelected ? ' selected' : '') + '" data-item-id="' + item.Item_ID + '" data-index="' + index + '">' +
+          '<div class="cc-item-checkbox">' +
+            '<input type="checkbox" ' + (isSelected ? 'checked' : '') + ' />' +
+          '</div>' +
+          '<div class="cc-item-content">' +
+            '<div class="cc-item-header">' +
+              '<div class="cc-item-title">' + escapeHtml(item.Name || 'Untitled') + '</div>' +
+              '<span class="cc-status-badge ' + statusClass + '">' + (item.Status || 'Available') + '</span>' +
+            '</div>' +
+            '<div class="cc-item-meta">' +
+              '<span class="cc-meta-tag price">$' + formatNumber(item.Price || 0) + '</span>' +
+              '<span class="cc-meta-tag">' + escapeHtml(item.Category_Name || 'Uncategorized') + '</span>' +
+              (daysOld > 90 ? '<span class="cc-meta-tag" style="background:#fce8e6;color:#ea4335">' + daysOld + 'd old</span>' : '') +
+            '</div>' +
+            '<div class="cc-margin-bar"><div class="cc-margin-fill ' + marginClass + '" style="width:' + margin + '%"></div></div>' +
+            '<div class="cc-item-details">' +
+              '<span>Margin: ' + margin + '%</span>' +
+              '<span>' + (item.Condition || '') + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
+
+      function renderSales() {
+        var sales = State.sales.items;
+        var container = document.getElementById('sales-list');
+
+        if (!sales || sales.length === 0) {
+          container.innerHTML = '<div class="cc-empty-state"><div class="cc-empty-text">No sales found</div></div>';
+          renderPagination('sales');
+          return;
+        }
+
+        container.innerHTML = sales.map(function(sale) {
+          var date = sale.Date ? new Date(sale.Date).toLocaleDateString() : '';
+          return '<div class="cc-sale-card">' +
+            '<div class="cc-sale-header">' +
+              '<span class="cc-sale-item">' + escapeHtml(sale.Item_Name || 'Unknown Item') + '</span>' +
+              '<span class="cc-status-badge ' + (sale.Status || 'completed').toLowerCase() + '">' + (sale.Status || 'Completed') + '</span>' +
+            '</div>' +
+            '<div class="cc-sale-date">' + date + '</div>' +
+            '<div class="cc-sale-details">' +
+              '<span>$' + formatNumber(sale.Total || sale.Unit_Price || 0) + '</span>' +
+              '<span>' + (sale.Payment_Method || 'Cash') + '</span>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        renderPagination('sales');
+      }
+
+      function renderPagination(type) {
+        var state = type === 'inventory' ? State.inventory : State.sales;
+        var container = document.getElementById(type + '-pagination');
+
+        if (state.totalPages <= 1) {
+          container.innerHTML = '';
+          return;
+        }
+
+        var html = '<button class="cc-page-btn" data-action="prev-page" data-type="' + type + '" ' + (state.page <= 1 ? 'disabled' : '') + '>Previous</button>' +
+          '<span class="cc-page-info">Page ' + state.page + ' of ' + state.totalPages + '</span>' +
+          '<button class="cc-page-btn" data-action="next-page" data-type="' + type + '" ' + (state.page >= state.totalPages ? 'disabled' : '') + '>Next</button>';
+
+        container.innerHTML = html;
+
+        // Add pagination click handlers
+        container.querySelectorAll('[data-action]').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var action = this.dataset.action;
+            var pType = this.dataset.type;
+            if (action === 'prev-page') {
+              if (pType === 'inventory') loadInventory(State.inventory.page - 1);
+              else loadSales(State.sales.page - 1);
+            } else if (action === 'next-page') {
+              if (pType === 'inventory') loadInventory(State.inventory.page + 1);
+              else loadSales(State.sales.page + 1);
+            }
+          });
+        });
+      }
+
+      // ============================================================================
+      // SELECTION & BULK ACTIONS
+      // ============================================================================
+      function handleItemClick(event, card) {
+        var itemId = card.dataset.itemId;
+        var index = parseInt(card.dataset.index);
+        var checkbox = card.querySelector('input[type="checkbox"]');
+
+        if (event.shiftKey && State.selection.lastClickedIndex >= 0) {
+          // Range selection
+          var start = Math.min(State.selection.lastClickedIndex, index);
+          var end = Math.max(State.selection.lastClickedIndex, index);
+
+          for (var i = start; i <= end; i++) {
+            var item = State.inventory.items[i];
+            if (item && State.selection.items.indexOf(item.Item_ID) === -1) {
+              State.selection.items.push(item.Item_ID);
+            }
+          }
+        } else if (event.ctrlKey || event.metaKey) {
+          // Toggle selection
+          var idx = State.selection.items.indexOf(itemId);
+          if (idx === -1) {
+            State.selection.items.push(itemId);
+          } else {
+            State.selection.items.splice(idx, 1);
+          }
+        } else {
+          // Single selection (toggle)
+          var idx = State.selection.items.indexOf(itemId);
+          if (idx === -1) {
+            State.selection.items.push(itemId);
+          } else {
+            State.selection.items.splice(idx, 1);
+          }
+        }
+
+        State.selection.lastClickedIndex = index;
+        updateSelectionUI();
+      }
+
+      function toggleSelection(itemId, checked) {
+        var idx = State.selection.items.indexOf(itemId);
+        if (checked && idx === -1) {
+          State.selection.items.push(itemId);
+        } else if (!checked && idx !== -1) {
+          State.selection.items.splice(idx, 1);
+        }
+        updateSelectionUI();
+      }
+
+      function selectAll() {
+        State.selection.items = State.inventory.items.map(function(item) {
+          return item.Item_ID;
+        });
+        updateSelectionUI();
+      }
+
+      function clearSelection() {
+        State.selection.items = [];
+        State.selection.lastClickedIndex = -1;
+        updateSelectionUI();
+      }
+
+      function updateSelectionUI() {
+        var count = State.selection.items.length;
+
+        // Update selection bar
+        var selectionBar = document.getElementById('selection-bar');
+        var bulkBar = document.getElementById('bulk-bar');
+
+        if (count > 0) {
+          selectionBar.classList.add('visible');
+          bulkBar.classList.add('visible');
+          document.getElementById('selection-count').textContent = count + ' item' + (count > 1 ? 's' : '') + ' selected';
+          document.getElementById('bulk-count').textContent = count + ' selected';
+        } else {
+          selectionBar.classList.remove('visible');
+          bulkBar.classList.remove('visible');
+        }
+
+        // Update card states
+        document.querySelectorAll('.cc-item-card').forEach(function(card) {
+          var itemId = card.dataset.itemId;
+          var isSelected = State.selection.items.indexOf(itemId) !== -1;
+          card.classList.toggle('selected', isSelected);
+          var checkbox = card.querySelector('input[type="checkbox"]');
+          if (checkbox) checkbox.checked = isSelected;
+        });
+      }
+
+      function bulkUpdateStatus(status) {
+        if (State.selection.items.length === 0) {
+          showToast('No items selected', 'warning');
+          return;
+        }
+
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideLoading();
+            showToast('Updated ' + result.updated + ' items', 'success');
+            clearSelection();
+            loadInventory();
+          })
+          .withFailureHandler(handleError)
+          .bulkUpdateStatus(State.selection.items, status);
+      }
+
+      function bulkMoveLocation(locationId) {
+        if (State.selection.items.length === 0) {
+          showToast('No items selected', 'warning');
+          return;
+        }
+
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideLoading();
+            showToast('Moved ' + result.updated + ' items', 'success');
+            clearSelection();
+            loadInventory();
+          })
+          .withFailureHandler(handleError)
+          .bulkMoveItems(State.selection.items, locationId);
+      }
+
+      function bulkDelete() {
+        if (State.selection.items.length === 0) {
+          showToast('No items selected', 'warning');
+          return;
+        }
+
+        if (!confirm('Delete ' + State.selection.items.length + ' items? This cannot be undone.')) {
+          return;
+        }
+
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideLoading();
+            showToast('Deleted ' + result.deleted + ' items', 'success');
+            clearSelection();
+            loadInventory();
+          })
+          .withFailureHandler(handleError)
+          .bulkDeleteItems(State.selection.items);
+      }
+
+      function bulkQuickSale() {
+        if (State.selection.items.length === 0) {
+          showToast('No items selected', 'warning');
+          return;
+        }
+
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideLoading();
+            showToast('Sold ' + result.sold + ' items for $' + formatNumber(result.total), 'success');
+            clearSelection();
+            loadInventory();
+            loadDashboard();
+          })
+          .withFailureHandler(handleError)
+          .quickSale(State.selection.items, { paymentMethod: 'Cash' });
+      }
+
+      // ============================================================================
+      // FILTERING
+      // ============================================================================
+      function applyFilter(filter) {
+        State.inventory.filter = filter;
+
+        // Update button states
+        document.querySelectorAll('.cc-filter-btn').forEach(function(btn) {
+          btn.classList.toggle('active', btn.dataset.filter === filter);
+        });
+
+        // Filter items
+        filterInventory();
+      }
+
+      function filterInventory() {
+        var filter = State.inventory.filter;
+        var allItems = State.inventory.allItems;
+
+        if (filter === 'all') {
+          State.inventory.items = allItems;
+        } else if (filter === 'available') {
+          State.inventory.items = allItems.filter(function(item) {
+            return item.Status === 'Available';
+          });
+        } else if (filter === 'new') {
+          var weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          State.inventory.items = allItems.filter(function(item) {
+            return new Date(item.Date_Added) > weekAgo;
+          });
+        } else if (filter === 'aging') {
+          var ninetyDaysAgo = new Date();
+          ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+          State.inventory.items = allItems.filter(function(item) {
+            return new Date(item.Date_Added) < ninetyDaysAgo;
+          });
+        } else if (filter === 'high-margin') {
+          State.inventory.items = allItems.filter(function(item) {
+            var margin = item.Cost > 0 ? ((item.Price - item.Cost) / item.Price) * 100 : 0;
+            return margin >= 50;
+          });
+        }
+
+        renderInventory();
+      }
+
+      function filterInventoryBySearch(query) {
+        query = query.toLowerCase().trim();
+        if (!query) {
+          State.inventory.items = State.inventory.allItems;
+        } else {
+          State.inventory.items = State.inventory.allItems.filter(function(item) {
+            return (item.Name || '').toLowerCase().indexOf(query) !== -1 ||
+                   (item.Category_Name || '').toLowerCase().indexOf(query) !== -1;
+          });
+        }
+        renderInventory();
+      }
+
+      // ============================================================================
+      // FORMS
+      // ============================================================================
+      function submitItem(form) {
+        var formData = new FormData(form);
+        var data = {
+          Name: formData.get('name'),
+          Category_ID: formData.get('category'),
+          Condition: formData.get('condition'),
+          Price: parseFloat(formData.get('price')) || 0,
+          Cost: parseFloat(formData.get('cost')) || 0,
+          Era: formData.get('era'),
+          Location_ID: formData.get('location'),
+          Description: formData.get('description')
+        };
+
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideLoading();
+            showToast('Item created successfully', 'success');
+            form.reset();
+            loadDashboard();
+          })
+          .withFailureHandler(handleError)
+          .createItem(data);
+      }
+
+      function submitSale(form) {
+        var formData = new FormData(form);
+        var data = {
+          Item_ID: formData.get('itemId'),
+          Unit_Price: parseFloat(formData.get('price')) || 0,
+          Payment_Method: formData.get('paymentMethod'),
+          Customer_ID: formData.get('customerId'),
+          Notes: formData.get('notes')
+        };
+
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideLoading();
+            showToast('Sale recorded successfully', 'success');
+            form.reset();
+            loadFormDropdowns();
+            loadDashboard();
+          })
+          .withFailureHandler(handleError)
+          .recordSale(data);
+      }
+
+      function updateSalePrice() {
+        var select = document.getElementById('cc-item-select');
+        var priceInput = document.getElementById('cc-sale-price');
+        var option = select.options[select.selectedIndex];
+
+        if (option && option.dataset.price) {
+          priceInput.value = option.dataset.price;
+        }
+      }
+
+      // ============================================================================
+      // TOOLS
+      // ============================================================================
+      function exportCSV() {
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function(csvContent) {
+            hideLoading();
+            var blob = new Blob([csvContent], { type: 'text/csv' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'inventory_export.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Export complete', 'success');
+          })
+          .withFailureHandler(handleError)
+          .exportInventoryCSV({});
+      }
+
+      function refreshData() {
+        showLoading();
+        loadDashboard();
+        if (State.currentPanel === 'inventory') loadInventory();
+        if (State.currentPanel === 'sales') loadSales();
+        hideLoading();
+        showToast('Data refreshed', 'success');
+      }
+
+      function refreshCache() {
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function(result) {
+            hideLoading();
+            showToast('Cache refreshed (' + result.duration + 'ms)', 'success');
+            loadDashboard();
+          })
+          .withFailureHandler(handleError)
+          .refreshDashboardCache();
+      }
+
+      function clearCaches() {
+        if (!confirm('Clear all cached data?')) return;
+
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function() {
+            hideLoading();
+            showToast('Caches cleared', 'success');
+          })
+          .withFailureHandler(handleError)
+          .menuClearCaches();
+      }
+
+      // ============================================================================
+      // SETTINGS
+      // ============================================================================
+      function saveSettings() {
+        State.settings.pageSize = parseInt(document.getElementById('setting-page-size').value);
+        State.settings.currency = document.getElementById('setting-currency').value;
+        State.settings.dateFormat = document.getElementById('setting-date-format').value;
+        State.settings.lowMarginThreshold = parseInt(document.getElementById('setting-low-margin').value);
+        State.settings.agingWarningDays = parseInt(document.getElementById('setting-aging-days').value);
+        State.settings.defaultLocation = document.getElementById('setting-default-location').value;
+
+        showToast('Settings saved', 'success');
+      }
+
+      function resetSettings() {
+        State.settings = {
+          pageSize: 30,
+          lowMarginThreshold: 30,
+          agingWarningDays: 90,
+          currency: '$',
+          dateFormat: 'MM/DD/YYYY',
+          defaultLocation: ''
+        };
+
+        document.getElementById('setting-page-size').value = '30';
+        document.getElementById('setting-currency').value = '$';
+        document.getElementById('setting-date-format').value = 'MM/DD/YYYY';
+        document.getElementById('setting-low-margin').value = '30';
+        document.getElementById('setting-aging-days').value = '90';
+        document.getElementById('setting-default-location').value = '';
+
+        showToast('Settings reset to defaults', 'success');
+      }
+
+      // ============================================================================
+      // UTILITIES
+      // ============================================================================
+      function formatNumber(num) {
+        return parseFloat(num || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+      }
+
+      function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      function showLoading() {
+        document.getElementById('loading-overlay').classList.remove('hidden');
+      }
+
+      function hideLoading() {
+        document.getElementById('loading-overlay').classList.add('hidden');
+      }
+
+      function showToast(message, type) {
+        type = type || 'success';
+        var toast = document.createElement('div');
+        toast.className = 'cc-toast ' + type;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        setTimeout(function() {
+          toast.remove();
+        }, 3000);
+      }
+
+      function handleError(error) {
+        hideLoading();
+        var message = error.message || error.toString() || 'An error occurred';
+        showToast(message, 'error');
+        console.error('Error:', error);
+      }
+    </script>
+  </body>
+</html>

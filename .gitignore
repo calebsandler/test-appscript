@@ -1,0 +1,34 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Claude Code
+.claude/
+
+# Node modules (if using npm/clasp)
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Compiled files
+*.js.map
+
+# Backup files
+*.bak
+*.backup
+
+# Log files
+*.log
+npm-debug.log*
+
+# clasp credentials (keep .clasp.json but ignore global credentials)
+.clasprc.json

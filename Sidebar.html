@@ -1,0 +1,2754 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="UTF-8" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        /* Google-like colors */
+        --white: #ffffff;
+        --gray-50: #f8f9fa;
+        --gray-100: #f1f3f4;
+        --gray-200: #e8eaed;
+        --gray-300: #dadce0;
+        --gray-500: #9aa0a6;
+        --gray-700: #5f6368;
+        --gray-900: #202124;
+
+        /* Primary */
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --primary-light: #e8f0fe;
+
+        /* Status */
+        --success: #34a853;
+        --error: #ea4335;
+        --warning: #fbbc04;
+
+        /* Typography */
+        --font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
+
+        /* Spacing */
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 12px;
+        --space-lg: 16px;
+        --space-xl: 24px;
+
+        /* Border radius */
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-full: 20px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--font-family);
+        font-size: 13px;
+        background: var(--white);
+        color: var(--gray-900);
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      .sidebar-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      /* Header */
+      .header {
+        background: var(--white);
+        padding: var(--space-md) var(--space-lg);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .header-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .shop-name {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--gray-900);
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+      }
+
+      .expand-btn {
+        padding: var(--space-sm);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        background: var(--white);
+        color: var(--gray-500);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .expand-btn:hover {
+        background: var(--gray-50);
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .shop-icon {
+        width: 24px;
+        height: 24px;
+        background: var(--primary);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--white);
+      }
+
+      .tagline {
+        font-size: 11px;
+        color: var(--gray-500);
+        margin-top: 2px;
+      }
+
+      /* Search */
+      .search-container {
+        padding: var(--space-sm) var(--space-lg);
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .search-box {
+        display: flex;
+        align-items: center;
+        background: var(--gray-100);
+        border-radius: var(--radius-full);
+        padding: var(--space-sm) var(--space-md);
+        transition: all 0.2s;
+      }
+
+      .search-box:focus-within {
+        background: var(--white);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 1px var(--gray-300);
+      }
+
+      .search-box input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-size: 13px;
+        background: transparent;
+        color: var(--gray-900);
+        font-family: var(--font-family);
+      }
+
+      .search-box input::placeholder {
+        color: var(--gray-500);
+      }
+
+      .search-icon {
+        color: var(--gray-500);
+        margin-right: var(--space-sm);
+        font-size: 14px;
+      }
+
+      /* Navigation tabs */
+      .nav-tabs {
+        display: flex;
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 0 var(--space-sm);
+      }
+
+      .nav-tab {
+        flex: 1;
+        padding: var(--space-sm) var(--space-xs);
+        text-align: center;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-700);
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+      }
+
+      .nav-tab:hover {
+        color: var(--primary);
+        background: var(--gray-50);
+      }
+
+      .nav-tab.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+      }
+
+      .nav-tab .tab-icon {
+        display: block;
+        width: 18px;
+        height: 18px;
+        margin: 0 auto var(--space-xs);
+        stroke-width: 1.5;
+      }
+
+      /* Main content */
+      .main-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--space-lg);
+        background: var(--white);
+      }
+
+      .panel {
+        display: none;
+      }
+      .panel.active {
+        display: block;
+      }
+
+      /* Cards */
+      .card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+      }
+
+      .card-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: var(--space-sm);
+      }
+
+      /* Health Score Card */
+      .health-score-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+      }
+
+      .health-score-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-sm);
+      }
+
+      .health-score-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .health-score-value {
+        font-size: 20px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .health-score-status {
+        font-size: 11px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+      }
+
+      .health-score-status.excellent {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+      .health-score-status.good {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+      .health-score-status.fair {
+        background: #fef7e0;
+        color: #e37400;
+      }
+      .health-score-status.poor {
+        background: #fce8e6;
+        color: var(--error);
+      }
+
+      .health-bar {
+        height: 6px;
+        background: var(--gray-200);
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: var(--space-md);
+      }
+
+      .health-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s ease;
+      }
+
+      .health-metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-sm);
+        text-align: center;
+      }
+
+      .health-metric-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .health-metric-label {
+        font-size: 10px;
+        color: var(--gray-500);
+        margin-top: 2px;
+      }
+
+      /* Action Items Card */
+      .action-items-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+      }
+
+      .action-items-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-sm);
+        padding-bottom: var(--space-sm);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .action-items-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .action-items-count {
+        font-size: 11px;
+        font-weight: 500;
+        background: var(--primary);
+        color: var(--white);
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+      }
+
+      .action-item {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-sm) 0;
+        border-bottom: 1px solid var(--gray-100);
+      }
+
+      .action-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .action-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        margin-top: 5px;
+        flex-shrink: 0;
+      }
+
+      .action-dot.high {
+        background: var(--error);
+      }
+      .action-dot.medium {
+        background: var(--warning);
+      }
+      .action-dot.low {
+        background: var(--success);
+      }
+
+      .action-message {
+        font-size: 13px;
+        color: var(--gray-900);
+      }
+
+      .action-detail {
+        font-size: 11px;
+        color: var(--gray-500);
+        margin-top: 2px;
+      }
+
+      /* Dashboard Row */
+      .dashboard-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+      }
+
+      .ledger-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+      }
+
+      .ledger-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: var(--space-sm);
+        padding-bottom: var(--space-sm);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .ledger-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: var(--space-xs) 0;
+        font-size: 13px;
+      }
+
+      .ledger-label {
+        color: var(--gray-700);
+      }
+      .ledger-value {
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .ledger-comparison {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+        margin-top: var(--space-sm);
+        padding-top: var(--space-sm);
+        border-top: 1px solid var(--gray-200);
+        font-size: 11px;
+      }
+
+      .ledger-comparison .positive {
+        color: var(--success);
+      }
+      .ledger-comparison .negative {
+        color: var(--error);
+      }
+
+      /* Chart Container */
+      .chart-container {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-md);
+      }
+
+      .chart-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: var(--space-sm);
+      }
+
+      .chart-canvas-wrapper {
+        position: relative;
+        height: 160px;
+      }
+
+      /* Section Header */
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--space-sm);
+        padding-bottom: var(--space-sm);
+        border-bottom: 1px solid var(--gray-200);
+      }
+
+      .section-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+      }
+
+      .section-action {
+        font-size: 12px;
+        color: var(--primary);
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .section-action:hover {
+        text-decoration: underline;
+      }
+
+      /* Item Cards */
+      .item-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-sm);
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .item-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--space-sm);
+      }
+
+      .item-title {
+        font-weight: 500;
+        color: var(--gray-900);
+        font-size: 13px;
+      }
+
+      .item-meta {
+        display: flex;
+        gap: var(--space-sm);
+        flex-wrap: wrap;
+      }
+
+      .meta-tag {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: var(--radius-sm);
+        background: var(--gray-100);
+        color: var(--gray-700);
+      }
+
+      .meta-tag.price {
+        background: var(--primary);
+        color: var(--white);
+        font-weight: 500;
+      }
+
+      .status-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+        font-weight: 500;
+      }
+
+      .status-badge.available {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+      .status-badge.sold {
+        background: var(--gray-100);
+        color: var(--gray-700);
+      }
+      .status-badge.reserved {
+        background: #fef7e0;
+        color: #e37400;
+      }
+      .status-badge.completed {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+      .status-badge.pending {
+        background: #fef7e0;
+        color: #e37400;
+      }
+
+      .item-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--space-sm);
+        padding-top: var(--space-sm);
+        border-top: 1px solid var(--gray-100);
+      }
+
+      .item-margin {
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+      }
+
+      .margin-label {
+        color: var(--gray-500);
+      }
+      .margin-value {
+        font-weight: 500;
+      }
+
+      .margin-value.excellent {
+        color: var(--success);
+      }
+      .margin-value.good {
+        color: var(--success);
+      }
+      .margin-value.fair {
+        color: #e37400;
+      }
+      .margin-value.poor {
+        color: var(--error);
+      }
+
+      .item-aging {
+        flex: 1;
+        max-width: 100px;
+        margin-left: var(--space-md);
+      }
+
+      .aging-label {
+        font-size: 10px;
+        color: var(--gray-500);
+        margin-bottom: 2px;
+        text-align: right;
+      }
+
+      .aging-bar {
+        height: 4px;
+        background: var(--gray-200);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+
+      .aging-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.3s;
+      }
+
+      .aging-bar-fill.fresh {
+        background: var(--success);
+      }
+      .aging-bar-fill.normal {
+        background: var(--success);
+      }
+      .aging-bar-fill.aging {
+        background: var(--warning);
+      }
+      .aging-bar-fill.stale {
+        background: var(--error);
+      }
+
+      /* Filter Buttons */
+      .filter-buttons {
+        display: flex;
+        gap: var(--space-xs);
+        flex-wrap: wrap;
+        margin-bottom: var(--space-md);
+      }
+
+      .filter-btn {
+        font-size: 11px;
+        padding: 6px 12px;
+        border-radius: var(--radius-full);
+        border: 1px solid var(--gray-300);
+        background: var(--white);
+        color: var(--gray-700);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: var(--font-family);
+        font-weight: 500;
+      }
+
+      .filter-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .filter-btn.active {
+        background: var(--primary);
+        color: var(--white);
+        border-color: var(--primary);
+      }
+
+      /* Forms */
+      .form-group {
+        margin-bottom: var(--space-md);
+      }
+
+      .form-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--gray-700);
+        margin-bottom: var(--space-xs);
+      }
+
+      .form-input {
+        width: 100%;
+        padding: var(--space-sm) var(--space-md);
+        font-size: 13px;
+        font-family: var(--font-family);
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        border-radius: var(--radius-sm);
+        color: var(--gray-900);
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary-light);
+      }
+
+      select.form-input {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235f6368' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 32px;
+      }
+
+      textarea.form-input {
+        min-height: 60px;
+        resize: vertical;
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm);
+      }
+
+      .form-grid .full-width {
+        grid-column: 1 / -1;
+      }
+
+      .price-input-group {
+        position: relative;
+      }
+
+      .price-input-group::before {
+        content: "$";
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray-500);
+        font-size: 13px;
+      }
+
+      .price-input-group .form-input {
+        padding-left: 24px;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-xs);
+        padding: var(--space-sm) var(--space-lg);
+        font-family: var(--font-family);
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: var(--radius-sm);
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: var(--white);
+        width: 100%;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn-secondary {
+        background: var(--white);
+        color: var(--primary);
+        border: 1px solid var(--gray-300);
+      }
+
+      .btn-secondary:hover {
+        background: var(--gray-50);
+        border-color: var(--primary);
+      }
+
+      .btn-sm {
+        padding: var(--space-xs) var(--space-sm);
+        font-size: 11px;
+      }
+
+      /* Tools Grid */
+      .tools-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-sm);
+      }
+
+      .tool-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .tool-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .tool-icon {
+        margin-bottom: var(--space-xs);
+        color: var(--gray-700);
+      }
+
+      .tool-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--gray-900);
+      }
+
+      .tool-desc {
+        font-size: 10px;
+        color: var(--gray-500);
+        margin-top: 2px;
+      }
+
+      /* Pagination */
+      .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--space-md);
+        margin-top: var(--space-md);
+        padding-top: var(--space-md);
+        border-top: 1px solid var(--gray-200);
+      }
+
+      .pagination-btn {
+        background: var(--white);
+        border: 1px solid var(--gray-300);
+        color: var(--gray-700);
+        padding: var(--space-xs) var(--space-md);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: 12px;
+        font-family: var(--font-family);
+        transition: all 0.2s;
+      }
+
+      .pagination-btn:hover:not(:disabled) {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .pagination-info {
+        font-size: 12px;
+        color: var(--gray-500);
+      }
+
+      /* Toast */
+      .toast {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--gray-900);
+        color: var(--white);
+        border-radius: var(--radius-sm);
+        padding: var(--space-sm) var(--space-lg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-size: 13px;
+        animation: slideUp 0.3s ease;
+        z-index: 1001;
+      }
+
+      .toast.success {
+        background: var(--success);
+      }
+      .toast.error {
+        background: var(--error);
+      }
+      .toast.warning {
+        background: var(--warning);
+        color: var(--gray-900);
+      }
+
+      @keyframes slideUp {
+        from {
+          transform: translate(-50%, 100%);
+          opacity: 0;
+        }
+        to {
+          transform: translate(-50%, 0);
+          opacity: 1;
+        }
+      }
+
+      /* Loading */
+      .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+      }
+
+      .loading-spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--gray-200);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: var(--space-xl) var(--space-lg);
+        color: var(--gray-500);
+      }
+
+      .empty-state-icon {
+        font-size: 32px;
+        margin-bottom: var(--space-sm);
+        opacity: 0.5;
+      }
+
+      .empty-state-text {
+        font-size: 13px;
+        font-style: italic;
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--white);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--gray-300);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--gray-500);
+      }
+
+      /* Skeleton Loaders */
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          var(--gray-100) 25%,
+          var(--gray-200) 50%,
+          var(--gray-100) 75%
+        );
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.5s infinite;
+        border-radius: var(--radius-sm);
+      }
+
+      @keyframes skeleton-shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      .skeleton-text {
+        height: 14px;
+        width: 80%;
+        margin-bottom: var(--space-xs);
+      }
+
+      .skeleton-text.short {
+        width: 40%;
+      }
+      .skeleton-text.medium {
+        width: 60%;
+      }
+      .skeleton-text.full {
+        width: 100%;
+      }
+
+      .skeleton-value {
+        height: 20px;
+        width: 60px;
+      }
+
+      .skeleton-chart {
+        height: 160px;
+        width: 100%;
+      }
+
+      .skeleton-card {
+        height: 80px;
+        width: 100%;
+        margin-bottom: var(--space-sm);
+      }
+
+      /* Fade in animation for loaded content */
+      .fade-in {
+        animation: fadeIn 0.3s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Cache indicator */
+      .cache-indicator {
+        font-size: 9px;
+        padding: 2px 6px;
+        background: var(--primary-light);
+        color: var(--primary);
+        border-radius: var(--radius-full);
+        margin-left: var(--space-xs);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar-container">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-row">
+          <div class="shop-name">
+            <span class="shop-icon">R</span>
+            Rosewood Antiques
+          </div>
+          <button class="expand-btn" data-action="open-control-center" title="Open Control Center">
+            <i data-lucide="maximize-2" style="width: 16px; height: 16px;"></i>
+          </button>
+        </div>
+        <div class="tagline">Inventory Management</div>
+      </div>
+
+      <!-- Search -->
+      <div class="search-container">
+        <div class="search-box">
+          <span class="search-icon">&#128269;</span>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search inventory..."
+            data-action="search"
+          />
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-panel="dashboard">
+          <i data-lucide="book-open" class="tab-icon"></i>
+          Ledger
+        </button>
+        <button class="nav-tab" data-panel="orders">
+          <i data-lucide="receipt" class="tab-icon"></i>
+          Sales
+        </button>
+        <button class="nav-tab" data-panel="inventory">
+          <i data-lucide="archive" class="tab-icon"></i>
+          Catalog
+        </button>
+        <button class="nav-tab" data-panel="add">
+          <i data-lucide="plus-circle" class="tab-icon"></i>
+          Add
+        </button>
+        <button class="nav-tab" data-panel="tools">
+          <i data-lucide="settings" class="tab-icon"></i>
+          Tools
+        </button>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Dashboard Panel -->
+        <div id="dashboard-panel" class="panel active">
+          <!-- Health Score -->
+          <div class="health-score-card">
+            <div class="health-score-header">
+              <span class="health-score-title">Inventory Health</span>
+              <span class="health-score-value" id="health-score-value">--</span>
+              <span class="health-score-status" id="health-score-status"
+                >Loading</span
+              >
+            </div>
+            <div class="health-bar">
+              <div
+                class="health-bar-fill"
+                id="health-bar-fill"
+                style="width: 0%; background: var(--gray-300)"
+              ></div>
+            </div>
+            <div class="health-metrics" id="health-metrics">
+              <div class="health-metric">
+                <div class="health-metric-value" id="metric-turnover">--</div>
+                <div class="health-metric-label">Turnover</div>
+              </div>
+              <div class="health-metric">
+                <div class="health-metric-value" id="metric-aging">--</div>
+                <div class="health-metric-label">Aging</div>
+              </div>
+              <div class="health-metric">
+                <div class="health-metric-value" id="metric-margin">--</div>
+                <div class="health-metric-label">Margin</div>
+              </div>
+              <div class="health-metric">
+                <div class="health-metric-value" id="metric-velocity">--</div>
+                <div class="health-metric-label">Velocity</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Items -->
+          <div class="action-items-card">
+            <div class="action-items-header">
+              <span class="action-items-title">Action Items</span>
+              <span class="action-items-count" id="action-items-count">0</span>
+            </div>
+            <div class="action-list" id="action-list">
+              <div class="empty-state">
+                <div class="empty-state-text">All systems healthy</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Today's Ledger + Summary -->
+          <div class="dashboard-row">
+            <div class="ledger-card">
+              <div class="ledger-title">Today's Ledger</div>
+              <div class="ledger-row">
+                <span class="ledger-label">Revenue</span>
+                <span class="ledger-value" id="ledger-revenue">$0</span>
+              </div>
+              <div class="ledger-row">
+                <span class="ledger-label">Items Sold</span>
+                <span class="ledger-value" id="ledger-items">0</span>
+              </div>
+              <div class="ledger-row">
+                <span class="ledger-label">Avg Margin</span>
+                <span class="ledger-value" id="ledger-margin">--</span>
+              </div>
+              <div class="ledger-comparison" id="ledger-comparison">
+                <span>vs Last Week: --</span>
+              </div>
+            </div>
+
+            <div class="ledger-card">
+              <div class="ledger-title">Inventory</div>
+              <div class="ledger-row">
+                <span class="ledger-label">Total Items</span>
+                <span class="ledger-value" id="stat-items">0</span>
+              </div>
+              <div class="ledger-row">
+                <span class="ledger-label">Available</span>
+                <span class="ledger-value" id="stat-available">0</span>
+              </div>
+              <div class="ledger-row">
+                <span class="ledger-label">Value</span>
+                <span class="ledger-value" id="stat-value">$0</span>
+              </div>
+              <div class="ledger-comparison">
+                <span>Week Revenue: <strong id="stat-revenue">$0</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div class="chart-container">
+            <div class="chart-title">Category Performance</div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="category-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-title">Weekly Revenue</div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="revenue-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="section-header">
+            <span class="section-title">Recent Sales</span>
+            <span class="section-action" data-action="switch-panel" data-panel="orders"
+              >View All</span
+            >
+          </div>
+          <div id="recent-sales"></div>
+
+          <div class="section-header" style="margin-top: 16px">
+            <span class="section-title">New Arrivals</span>
+            <span class="section-action" data-action="switch-panel" data-panel="inventory"
+              >View All</span
+            >
+          </div>
+          <div id="recent-items"></div>
+        </div>
+
+        <!-- Orders/Sales Panel -->
+        <div id="orders-panel" class="panel">
+          <div class="section-header">
+            <span class="section-title">Sales History</span>
+            <button class="btn btn-secondary btn-sm" data-action="load-sales">
+              Refresh
+            </button>
+          </div>
+          <div id="sales-list"></div>
+          <div class="pagination" id="sales-pagination"></div>
+        </div>
+
+        <!-- Inventory Panel -->
+        <div id="inventory-panel" class="panel">
+          <div class="section-header">
+            <span class="section-title">Catalog</span>
+            <button class="btn btn-secondary btn-sm" data-action="load-inventory">
+              Refresh
+            </button>
+          </div>
+
+          <div class="filter-buttons" id="inventory-filters">
+            <button
+              class="filter-btn active"
+              data-action="apply-filter"
+              data-filter="all"
+            >
+              All
+            </button>
+            <button
+              class="filter-btn"
+              data-action="apply-filter"
+              data-filter="available"
+            >
+              Available
+            </button>
+            <button
+              class="filter-btn"
+              data-action="apply-filter"
+              data-filter="new"
+            >
+              New
+            </button>
+            <button
+              class="filter-btn"
+              data-action="apply-filter"
+              data-filter="aging"
+            >
+              Aging 90d+
+            </button>
+            <button
+              class="filter-btn"
+              data-action="apply-filter"
+              data-filter="high-margin"
+            >
+              High Margin
+            </button>
+          </div>
+
+          <div id="inventory-list">
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+            <div class="skeleton skeleton-card"></div>
+          </div>
+          <div class="pagination" id="inventory-pagination"></div>
+        </div>
+
+        <!-- Add Panel -->
+        <div id="add-panel" class="panel">
+          <div class="section-header">
+            <span class="section-title">Add New Item</span>
+          </div>
+
+          <form id="add-item-form" data-action="submit-item">
+            <div class="form-group">
+              <label class="form-label">Item Name *</label>
+              <input
+                type="text"
+                class="form-input"
+                name="Name"
+                required
+                placeholder="Victorian Mahogany Desk"
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea
+                class="form-input"
+                name="Description"
+                placeholder="Detailed description..."
+                rows="2"
+              ></textarea>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select
+                  class="form-input"
+                  name="Category_ID"
+                  id="category-select"
+                >
+                  <option value="">Select...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Location</label>
+                <select
+                  class="form-input"
+                  name="Location_ID"
+                  id="location-select"
+                >
+                  <option value="">Select...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Condition</label>
+                <select
+                  class="form-input"
+                  name="Condition"
+                  id="condition-select"
+                >
+                  <option value="Good">Good</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Era</label>
+                <select class="form-input" name="Era" id="era-select">
+                  <option value="">Select...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Price</label>
+                <div class="price-input-group">
+                  <input
+                    type="number"
+                    class="form-input"
+                    name="Price"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Cost</label>
+                <div class="price-input-group">
+                  <input
+                    type="number"
+                    class="form-input"
+                    name="Cost"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Quantity</label>
+                <input
+                  type="number"
+                  class="form-input"
+                  name="Quantity"
+                  min="1"
+                  value="1"
+                />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">SKU</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  name="SKU"
+                  placeholder="RSW-0001"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <textarea
+                class="form-input"
+                name="Notes"
+                placeholder="Additional notes..."
+                rows="2"
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add Item</button>
+          </form>
+
+          <div
+            style="
+              margin-top: 20px;
+              padding-top: 20px;
+              border-top: 1px solid var(--gray-200);
+            "
+          >
+            <div class="section-header">
+              <span class="section-title">Quick Sale</span>
+            </div>
+
+            <form id="quick-sale-form" data-action="submit-sale">
+              <div class="form-group">
+                <label class="form-label">Item *</label>
+                <select
+                  class="form-input"
+                  name="Item_ID"
+                  id="sale-item-select"
+                  required
+                  data-action="update-sale-price"
+                >
+                  <option value="">Select item...</option>
+                </select>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label">Price</label>
+                  <div class="price-input-group">
+                    <input
+                      type="number"
+                      class="form-input"
+                      name="Unit_Price"
+                      id="sale-price"
+                      step="0.01"
+                      min="0"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Payment</label>
+                  <select
+                    class="form-input"
+                    name="Payment_Method"
+                    id="payment-select"
+                  >
+                    <option value="Cash">Cash</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Record Sale</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tools Panel -->
+        <div id="tools-panel" class="panel">
+          <div class="section-header">
+            <span class="section-title">Tools</span>
+          </div>
+
+          <div class="tools-grid">
+            <div class="tool-card" data-action="export-csv">
+              <div class="tool-icon">
+                <i data-lucide="download" style="width: 20px; height: 20px"></i>
+              </div>
+              <div class="tool-name">Export CSV</div>
+              <div class="tool-desc">Download inventory</div>
+            </div>
+
+            <div class="tool-card" data-action="refresh-data">
+              <div class="tool-icon">
+                <i
+                  data-lucide="refresh-cw"
+                  style="width: 20px; height: 20px"
+                ></i>
+              </div>
+              <div class="tool-name">Refresh</div>
+              <div class="tool-desc">Reload all data</div>
+            </div>
+
+            <div class="tool-card" data-action="show-weekly-sales">
+              <div class="tool-icon">
+                <i
+                  data-lucide="bar-chart-2"
+                  style="width: 20px; height: 20px"
+                ></i>
+              </div>
+              <div class="tool-name">Weekly Report</div>
+              <div class="tool-desc">Sales analytics</div>
+            </div>
+
+            <div class="tool-card" data-action="clear-caches">
+              <div class="tool-icon">
+                <i data-lucide="trash-2" style="width: 20px; height: 20px"></i>
+              </div>
+              <div class="tool-name">Clear Cache</div>
+              <div class="tool-desc">Reset local data</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px">
+            <div class="section-header">
+              <span class="section-title">Weekly Sales</span>
+            </div>
+            <div id="weekly-sales-container"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay hidden">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+      // ============================================================================
+      // STATE MANAGEMENT
+      // ============================================================================
+      var AppState = {
+        config: null,
+        currentPanel: "dashboard",
+        inventory: {
+          items: [],
+          allItems: [],
+          page: 1,
+          totalPages: 1,
+          pageSize: 20,
+          total: 0
+        },
+        sales: {
+          items: [],
+          page: 1,
+          totalPages: 1
+        },
+        availableItems: [],
+        searchTimeout: null,
+        inventoryFilter: "all",
+        isLoading: false,
+        selectedItems: []
+      };
+
+      // ============================================================================
+      // INITIALIZATION
+      // ============================================================================
+      document.addEventListener("DOMContentLoaded", init);
+
+      function init() {
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+        setupEventDelegation();
+        setupNavigation();
+        loadConfig();
+        loadDashboard();
+        loadFormDropdowns();
+      }
+
+      // ============================================================================
+      // EVENT DELEGATION
+      // ============================================================================
+      function setupEventDelegation() {
+        // Single event listener for all clicks
+        document.body.addEventListener("click", handleClick);
+
+        // Single event listener for form submissions
+        document.body.addEventListener("submit", handleSubmit);
+
+        // Single event listener for input changes
+        document.body.addEventListener("change", handleChange);
+
+        // Single event listener for keyup events
+        document.body.addEventListener("keyup", handleKeyUp);
+      }
+
+      function handleClick(event) {
+        var target = event.target;
+        var action = target.dataset.action || target.closest("[data-action]")?.dataset.action;
+
+        if (!action) return;
+
+        // Prevent default for certain actions
+        var preventActions = ["switch-panel", "apply-filter", "load-sales", "load-inventory"];
+        if (preventActions.indexOf(action) !== -1) {
+          event.preventDefault();
+        }
+
+        // Route to appropriate handler
+        switch (action) {
+          case "switch-panel":
+            var panel = target.dataset.panel || target.closest("[data-panel]").dataset.panel;
+            switchPanel(panel);
+            break;
+          case "apply-filter":
+            var filter = target.dataset.filter || target.closest("[data-filter]").dataset.filter;
+            applyInventoryFilter(filter);
+            break;
+          case "load-sales":
+            loadSales();
+            break;
+          case "load-inventory":
+            loadInventory();
+            break;
+          case "export-csv":
+            exportCSV();
+            break;
+          case "refresh-data":
+            refreshData();
+            break;
+          case "show-weekly-sales":
+            showWeeklySales();
+            break;
+          case "clear-caches":
+            clearCaches();
+            break;
+          case "open-control-center":
+            google.script.run.showControlCenter();
+            break;
+        }
+      }
+
+      function handleSubmit(event) {
+        var target = event.target;
+        var action = target.dataset.action;
+
+        if (!action) return;
+
+        event.preventDefault();
+
+        switch (action) {
+          case "submit-item":
+            submitItem(event);
+            break;
+          case "submit-sale":
+            submitSale(event);
+            break;
+        }
+      }
+
+      function handleChange(event) {
+        var target = event.target;
+        var action = target.dataset.action;
+
+        if (!action) return;
+
+        switch (action) {
+          case "update-sale-price":
+            updateSalePrice();
+            break;
+        }
+      }
+
+      function handleKeyUp(event) {
+        var target = event.target;
+        var action = target.dataset.action;
+
+        if (!action) return;
+
+        switch (action) {
+          case "search":
+            handleSearch(event);
+            break;
+        }
+      }
+
+      // Navigation
+      function setupNavigation() {
+        document
+          .querySelectorAll(".nav-tab[data-panel]")
+          .forEach(function (tab) {
+            tab.addEventListener("click", function () {
+              switchPanel(this.dataset.panel);
+            });
+          });
+      }
+
+      function switchPanel(panelId) {
+        AppState.currentPanel = panelId;
+
+        document.querySelectorAll(".nav-tab").forEach(function (t) {
+          t.classList.remove("active");
+        });
+        document
+          .querySelector('.nav-tab[data-panel="' + panelId + '"]')
+          .classList.add("active");
+
+        document.querySelectorAll(".panel").forEach(function (p) {
+          p.classList.remove("active");
+        });
+        document.getElementById(panelId + "-panel").classList.add("active");
+
+        if (panelId === "inventory") loadInventory();
+        if (panelId === "orders") loadSales();
+        if (panelId === "add") loadAvailableItems();
+        if (panelId === "tools") loadWeeklySales();
+      }
+
+      // ============================================================================
+      // ERROR HANDLING
+      // ============================================================================
+      function handleError(error) {
+        hideLoading();
+        var message = error.message || error.toString() || "An unexpected error occurred";
+        showToast(message, "error");
+        console.error("Error:", error);
+      }
+
+      function withStandardHandlers(successHandler) {
+        return {
+          success: function(data) {
+            try {
+              successHandler(data);
+            } catch (err) {
+              handleError(err);
+            }
+          },
+          failure: handleError
+        };
+      }
+
+      // ============================================================================
+      // CONFIG & DATA LOADING
+      // ============================================================================
+      function loadConfig() {
+        google.script.run
+          .withSuccessHandler(function (config) {
+            AppState.config = config;
+            populateConfigDropdowns(config);
+          })
+          .withFailureHandler(handleError)
+          .getConfig();
+      }
+
+      function populateConfigDropdowns(config) {
+        var conditionSelect = document.getElementById("condition-select");
+        conditionSelect.innerHTML = "";
+        config.conditions.forEach(function (c) {
+          var opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c;
+          conditionSelect.appendChild(opt);
+        });
+
+        var eraSelect = document.getElementById("era-select");
+        eraSelect.innerHTML = '<option value="">Select...</option>';
+        config.eras.forEach(function (e) {
+          var opt = document.createElement("option");
+          opt.value = e;
+          opt.textContent = e;
+          eraSelect.appendChild(opt);
+        });
+
+        var paymentSelect = document.getElementById("payment-select");
+        paymentSelect.innerHTML = "";
+        config.paymentMethods.forEach(function (p) {
+          var opt = document.createElement("option");
+          opt.value = p;
+          opt.textContent = p;
+          paymentSelect.appendChild(opt);
+        });
+      }
+
+      function loadFormDropdowns() {
+        google.script.run
+          .withSuccessHandler(function (categories) {
+            var select = document.getElementById("category-select");
+            categories.forEach(function (cat) {
+              var opt = document.createElement("option");
+              opt.value = cat.Category_ID;
+              opt.textContent = cat.Name;
+              select.appendChild(opt);
+            });
+          })
+          .withFailureHandler(handleError)
+          .getCategoriesList();
+
+        google.script.run
+          .withSuccessHandler(function (locations) {
+            var select = document.getElementById("location-select");
+            locations.forEach(function (loc) {
+              var opt = document.createElement("option");
+              opt.value = loc.Location_ID;
+              opt.textContent = loc.Name;
+              select.appendChild(opt);
+            });
+          })
+          .withFailureHandler(handleError)
+          .getLocations();
+      }
+
+      function loadDashboard() {
+        // Show skeleton loaders immediately for perceived performance
+        showDashboardSkeletons();
+
+        // Load all dashboard data (cache-first)
+        google.script.run
+          .withSuccessHandler(function (data) {
+            console.log('getDashboardV2 SUCCESS - received data:', data ? JSON.stringify(data).substring(0, 500) : 'NULL');
+            hideLoading();
+
+            // Defensive null check
+            if (!data) {
+              console.error('getDashboardV2 returned null/undefined');
+              showToast('Failed to load dashboard data', 'error');
+              // Render with empty data
+              data = {
+                inventory: { totalItems: 0, availableItems: 0, totalValue: 0, recentItems: [] },
+                sales: { weeklyRevenue: 0, recentSales: [] },
+                inventoryHealthScore: 0,
+                actionItems: [],
+                todaySummary: { revenue: 0, itemsSold: 0, avgMargin: 0, vsLastWeek: 0 },
+                categoryPerformance: [],
+                weeklyRevenue: []
+              };
+            }
+
+            try {
+              renderDashboard(data);
+              console.log('renderDashboard completed successfully');
+            } catch (err) {
+              console.error('renderDashboard ERROR:', err.message, err.stack);
+              showToast('Dashboard render error: ' + err.message, 'error');
+            }
+
+            // If data was from cache, silently refresh in background
+            if (data && data.fromCache) {
+              console.log('Dashboard loaded from cache, refreshing in background...');
+            }
+          })
+          .withFailureHandler(function(err) {
+            console.error('getDashboardV2 FAILED:', err);
+            handleError(err);
+          })
+          .getDashboardV2();
+      }
+
+      function showDashboardSkeletons() {
+        // Health score skeleton
+        document.getElementById('health-score-value').innerHTML = '<div class="skeleton skeleton-value" style="display: inline-block;"></div>';
+        document.getElementById('health-score-status').innerHTML = '';
+        
+        // Stats skeletons
+        document.getElementById('stat-revenue').innerHTML = '<div class="skeleton skeleton-value" style="display: inline-block;"></div>';
+        document.getElementById('stat-items').innerHTML = '<div class="skeleton skeleton-value" style="display: inline-block; width: 40px;"></div>';
+        document.getElementById('stat-available').innerHTML = '<div class="skeleton skeleton-value" style="display: inline-block; width: 40px;"></div>';
+        document.getElementById('stat-value').innerHTML = '<div class="skeleton skeleton-value" style="display: inline-block;"></div>';
+        
+        // Recent sales skeleton
+        var recentSalesEl = document.getElementById('recent-sales');
+        recentSalesEl.innerHTML = 
+          '<div class="skeleton skeleton-card"></div>' +
+          '<div class="skeleton skeleton-card"></div>' +
+          '<div class="skeleton skeleton-card"></div>';
+        
+        // Recent items skeleton
+        var recentItemsEl = document.getElementById('recent-items');
+        recentItemsEl.innerHTML = 
+          '<div class="skeleton skeleton-card"></div>' +
+          '<div class="skeleton skeleton-card"></div>' +
+          '<div class="skeleton skeleton-card"></div>';
+      }
+
+      var charts = { category: null, revenue: null };
+
+      function renderDashboard(data) {
+        var inv = data.inventory || {};
+        var sales = data.sales || {};
+
+        document.getElementById("stat-revenue").textContent =
+          "$" + formatNumber(sales.weeklyRevenue || 0);
+        document.getElementById("stat-items").textContent = inv.totalItems || 0;
+        document.getElementById("stat-available").textContent =
+          inv.availableItems || 0;
+        document.getElementById("stat-value").textContent =
+          "$" + formatNumber(inv.totalValue || 0);
+
+        renderHealthScore(data);
+        renderActionItems(data);
+        renderTodaysLedger(data);
+        initCharts(data);
+
+        var recentSalesEl = document.getElementById("recent-sales");
+        if (sales.recentSales && sales.recentSales.length > 0) {
+          recentSalesEl.innerHTML = sales.recentSales
+            .slice(0, 3)
+            .map(renderSaleCard)
+            .join("");
+        } else {
+          recentSalesEl.innerHTML =
+            '<div class="empty-state"><div class="empty-state-text">No recent sales</div></div>';
+        }
+
+        var recentItemsEl = document.getElementById("recent-items");
+        if (inv.recentItems && inv.recentItems.length > 0) {
+          recentItemsEl.innerHTML = inv.recentItems
+            .slice(0, 3)
+            .map(renderItemCard)
+            .join("");
+        } else {
+          recentItemsEl.innerHTML =
+            '<div class="empty-state"><div class="empty-state-text">No recent items</div></div>';
+        }
+      }
+
+      function renderHealthScore(data) {
+        var healthScore = data.inventoryHealthScore || 0;
+        var turnoverRate = data.turnoverRate || 0;
+        var agingCount = data.agingItemCount || 0;
+        var margin = data.blendedMargin || 0;
+        var velocity = data.averageVelocity || 0;
+
+        document.getElementById("health-score-value").textContent =
+          healthScore + "/100";
+
+        var statusEl = document.getElementById("health-score-status");
+        var barEl = document.getElementById("health-bar-fill");
+        var status, color;
+
+        if (healthScore >= 81) {
+          status = "Excellent";
+          color = "#34a853";
+          statusEl.className = "health-score-status excellent";
+        } else if (healthScore >= 61) {
+          status = "Good";
+          color = "#34a853";
+          statusEl.className = "health-score-status good";
+        } else if (healthScore >= 41) {
+          status = "Fair";
+          color = "#fbbc04";
+          statusEl.className = "health-score-status fair";
+        } else {
+          status = "Needs Attention";
+          color = "#ea4335";
+          statusEl.className = "health-score-status poor";
+        }
+
+        statusEl.textContent = status;
+        barEl.style.width = healthScore + "%";
+        barEl.style.background = color;
+
+        document.getElementById("metric-turnover").textContent =
+          turnoverRate + "x";
+        document.getElementById("metric-aging").textContent =
+          agingCount + " items";
+        document.getElementById("metric-margin").textContent = margin + "%";
+        document.getElementById("metric-velocity").textContent =
+          velocity + " days";
+      }
+
+      function renderActionItems(data) {
+        var actionItems = data.actionItems || [];
+        document.getElementById("action-items-count").textContent =
+          actionItems.length;
+
+        var listEl = document.getElementById("action-list");
+        if (actionItems.length > 0) {
+          listEl.innerHTML = actionItems
+            .map(function (item) {
+              return (
+                '<div class="action-item">' +
+                '<div class="action-dot ' +
+                item.priority +
+                '"></div>' +
+                '<div class="action-content">' +
+                '<div class="action-message">' +
+                escapeHtml(item.message) +
+                "</div>" +
+                '<div class="action-detail">' +
+                escapeHtml(item.detail) +
+                "</div>" +
+                "</div>" +
+                "</div>"
+              );
+            })
+            .join("");
+        } else {
+          listEl.innerHTML =
+            '<div class="empty-state"><div class="empty-state-text">All systems healthy</div></div>';
+        }
+      }
+
+      function renderTodaysLedger(data) {
+        var today = data.todaySummary || {};
+        document.getElementById("ledger-revenue").textContent =
+          "$" + formatNumber(today.revenue || 0);
+        document.getElementById("ledger-items").textContent =
+          today.itemsSold || 0;
+        document.getElementById("ledger-margin").textContent =
+          (today.avgMargin || 0) + "%";
+
+        var compEl = document.getElementById("ledger-comparison");
+        var vsLastWeek = today.vsLastWeek || 0;
+        var arrow = vsLastWeek >= 0 ? "&uarr;" : "&darr;";
+        var colorClass = vsLastWeek >= 0 ? "positive" : "negative";
+        compEl.innerHTML =
+          '<span class="' +
+          colorClass +
+          '">' +
+          arrow +
+          " " +
+          Math.abs(vsLastWeek) +
+          "% vs last week</span>";
+      }
+
+      function initCharts(data) {
+        var categoryPerf = data.categoryPerformance || [];
+        var weeklyRevenue = data.weeklyRevenue || [];
+        initCategoryChart(categoryPerf);
+        initRevenueChart(weeklyRevenue);
+      }
+
+      function initCategoryChart(categoryPerf) {
+        var ctx = document.getElementById("category-chart");
+        if (!ctx) return;
+        if (charts.category) charts.category.destroy();
+
+        var categories = categoryPerf
+          .map(function (c) {
+            return c.category;
+          })
+          .slice(0, 6);
+        var values = categoryPerf
+          .map(function (c) {
+            return c.revenue30d;
+          })
+          .slice(0, 6);
+
+        if (categories.length === 0) {
+          categories = ["No data"];
+          values = [0];
+        }
+
+        charts.category = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: categories,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: "#1a73e8",
+                borderRadius: 4,
+              },
+            ],
+          },
+          options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return "$" + formatNumber(context.raw);
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid: { color: "#e8eaed" },
+                ticks: {
+                  color: "#5f6368",
+                  font: { family: "Roboto" },
+                  callback: function (v) {
+                    return "$" + formatNumber(v);
+                  },
+                },
+              },
+              y: {
+                grid: { display: false },
+                ticks: { color: "#202124", font: { family: "Roboto" } },
+              },
+            },
+          },
+        });
+      }
+
+      function initRevenueChart(weeklyRevenue) {
+        var ctx = document.getElementById("revenue-chart");
+        if (!ctx) return;
+        if (charts.revenue) charts.revenue.destroy();
+
+        var weeks = weeklyRevenue.map(function (w) {
+          return w.week ? w.week.substring(5) : "";
+        });
+        var revenue = weeklyRevenue.map(function (w) {
+          return w.revenue || 0;
+        });
+
+        if (weeks.length === 0) {
+          weeks = ["No data"];
+          revenue = [0];
+        }
+
+        charts.revenue = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: weeks,
+            datasets: [
+              {
+                data: revenue,
+                borderColor: "#1a73e8",
+                backgroundColor: "rgba(26, 115, 232, 0.1)",
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: "#1a73e8",
+                pointRadius: 3,
+                pointHoverRadius: 5,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return "$" + formatNumber(context.raw);
+                  },
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid: { color: "#e8eaed" },
+                ticks: { color: "#5f6368", font: { family: "Roboto" } },
+              },
+              y: {
+                grid: { color: "#e8eaed" },
+                ticks: {
+                  color: "#5f6368",
+                  font: { family: "Roboto" },
+                  callback: function (v) {
+                    return "$" + formatNumber(v);
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function applyInventoryFilter(filterType) {
+        AppState.inventoryFilter = filterType;
+        document.querySelectorAll(".filter-btn").forEach(function (btn) {
+          btn.classList.remove("active");
+          if (btn.dataset.filter === filterType) btn.classList.add("active");
+        });
+        loadInventory(1);
+      }
+
+      function filterItems(items, filterType) {
+        var now = new Date();
+        switch (filterType) {
+          case "available":
+            return items.filter(function (item) {
+              return item.Status === "Available";
+            });
+          case "new":
+            var twoWeeksAgo = new Date(now);
+            twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+            return items.filter(function (item) {
+              return item.Date_Added && new Date(item.Date_Added) > twoWeeksAgo;
+            });
+          case "aging":
+            var ninetyDaysAgo = new Date(now);
+            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+            return items.filter(function (item) {
+              return (
+                item.Date_Added &&
+                new Date(item.Date_Added) < ninetyDaysAgo &&
+                item.Status === "Available"
+              );
+            });
+          case "high-margin":
+            return items.filter(function (item) {
+              if (item.Cost > 0) {
+                return ((item.Price - item.Cost) / item.Cost) * 100 >= 50;
+              }
+              return false;
+            });
+          default:
+            return items;
+        }
+      }
+
+      function loadInventory(page) {
+        page = page || 1;
+        var pageSize = 20; // Smaller page size for faster loading
+        
+        // Show skeleton while loading (only on first page or if container is empty)
+        var container = document.getElementById("inventory-list");
+        if (page === 1) {
+          container.innerHTML = 
+            '<div class="skeleton skeleton-card"></div>' +
+            '<div class="skeleton skeleton-card"></div>' +
+            '<div class="skeleton skeleton-card"></div>';
+        }
+        
+        console.log('Loading inventory page:', page, 'pageSize:', pageSize);
+        
+        google.script.run
+          .withSuccessHandler(function (data) {
+            hideLoading();
+            console.log('Inventory data received:', data);
+            console.log('Items count:', data.items ? data.items.length : 0, 'Total:', data.total);
+
+            try {
+              AppState.inventory = {
+                allItems: data.items || [],
+                items: data.items || [],
+                page: data.page,
+                pageSize: data.pageSize,
+                total: data.total,
+                totalPages: data.totalPages,
+              };
+
+              // Apply client-side filter to the current page
+              var filteredItems = filterItems(data.items || [], AppState.inventoryFilter);
+              renderInventory({
+                items: filteredItems,
+                page: data.page,
+                totalPages: data.totalPages,
+                total: data.total
+              });
+              console.log('renderInventory completed successfully');
+            } catch (err) {
+              console.error('renderInventory ERROR:', err.message, err.stack);
+              showToast('Inventory render error: ' + err.message, 'error');
+            }
+          })
+          .withFailureHandler(function(err) {
+            console.error('getInventory FAILED:', err);
+            handleError(err);
+          })
+          .getInventory({ page: page, pageSize: pageSize });
+      }
+
+      function renderInventory(data) {
+        var container = document.getElementById("inventory-list");
+        if (data.items && data.items.length > 0) {
+          container.innerHTML = data.items.map(renderItemCard).join("");
+        } else {
+          var msg =
+            AppState.inventoryFilter === "all"
+              ? "No inventory items"
+              : "No items match this filter";
+          container.innerHTML =
+            '<div class="empty-state"><div class="empty-state-text">' +
+            msg +
+            "</div></div>";
+        }
+
+        var paginationEl = document.getElementById("inventory-pagination");
+        var totalInfo = '<span style="color: var(--gray-500); font-size: 11px;">' +
+          (data.total || data.items.length) + ' total items</span>';
+        
+        if (data.totalPages > 1) {
+          paginationEl.innerHTML = totalInfo;
+          renderPagination(
+            "inventory-pagination",
+            data.page,
+            data.totalPages,
+            "loadInventory"
+          );
+        } else {
+          paginationEl.innerHTML = totalInfo;
+        }
+      }
+
+      function renderItemCard(item) {
+        var statusClass = (item.Status || "available")
+          .toLowerCase()
+          .replace(" ", "-");
+        var margin = 0,
+          marginClass = "fair";
+        if (item.Cost > 0) {
+          margin = ((item.Price - item.Cost) / item.Cost) * 100;
+          if (margin >= 100) marginClass = "excellent";
+          else if (margin >= 50) marginClass = "good";
+          else if (margin >= 30) marginClass = "fair";
+          else marginClass = "poor";
+        }
+
+        var daysListed = 0,
+          agingClass = "fresh";
+        if (item.Date_Added) {
+          daysListed = Math.floor(
+            (new Date() - new Date(item.Date_Added)) / (1000 * 60 * 60 * 24)
+          );
+          if (daysListed <= 30) agingClass = "fresh";
+          else if (daysListed <= 90) agingClass = "normal";
+          else if (daysListed <= 180) agingClass = "aging";
+          else agingClass = "stale";
+        }
+        var agingPercent = Math.min(100, (daysListed / 180) * 100);
+
+        return (
+          '<div class="item-card">' +
+          '<div class="item-header">' +
+          '<div class="item-title">' +
+          escapeHtml(item.Name || "Untitled") +
+          "</div>" +
+          '<span class="status-badge ' +
+          statusClass +
+          '">' +
+          (item.Status || "Available") +
+          "</span>" +
+          "</div>" +
+          '<div class="item-meta">' +
+          '<span class="meta-tag price">$' +
+          formatNumber(item.Price || 0) +
+          "</span>" +
+          (item.Category_Name
+            ? '<span class="meta-tag">' +
+              escapeHtml(item.Category_Name) +
+              "</span>"
+            : "") +
+          (item.Era
+            ? '<span class="meta-tag">' + escapeHtml(item.Era) + "</span>"
+            : "") +
+          "</div>" +
+          '<div class="item-details">' +
+          '<div class="item-margin">' +
+          '<span class="margin-label">Margin:</span>' +
+          '<span class="margin-value ' +
+          marginClass +
+          '">' +
+          (item.Cost > 0 ? Math.round(margin) + "%" : "--") +
+          "</span>" +
+          "</div>" +
+          '<div class="item-aging">' +
+          '<div class="aging-label">' +
+          daysListed +
+          "d</div>" +
+          '<div class="aging-bar"><div class="aging-bar-fill ' +
+          agingClass +
+          '" style="width: ' +
+          agingPercent +
+          '%"></div></div>' +
+          "</div>" +
+          "</div>" +
+          "</div>"
+        );
+      }
+
+      function loadSales(page) {
+        page = page || 1;
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function (data) {
+            hideLoading();
+            console.log('Sales data received:', data);
+
+            // Defensive null check
+            if (!data) {
+              console.error('getSales returned null/undefined');
+              showToast('Failed to load sales data', 'error');
+              renderSales({ sales: [], page: 1, totalPages: 0 });
+              return;
+            }
+
+            try {
+              AppState.sales = {
+                items: data.sales || [],
+                page: data.page || 1,
+                totalPages: data.totalPages || 0,
+              };
+              renderSales(data);
+              console.log('renderSales completed successfully');
+            } catch (err) {
+              console.error('renderSales ERROR:', err.message, err.stack);
+              showToast('Sales render error: ' + err.message, 'error');
+            }
+          })
+          .withFailureHandler(function(err) {
+            console.error('getSales FAILED:', err);
+            handleError(err);
+          })
+          .getSales({ page: page, pageSize: 20 });
+      }
+
+      function renderSales(data) {
+        var container = document.getElementById("sales-list");
+        var sales = (data && data.sales) || [];
+        if (sales.length > 0) {
+          container.innerHTML = sales.map(renderSaleCard).join("");
+        } else {
+          container.innerHTML =
+            '<div class="empty-state"><div class="empty-state-text">No sales recorded</div></div>';
+        }
+        renderPagination(
+          "sales-pagination",
+          (data && data.page) || 1,
+          (data && data.totalPages) || 0,
+          "loadSales"
+        );
+      }
+
+      function renderSaleCard(sale) {
+        var statusClass = (sale.Status || "completed").toLowerCase();
+        var date = sale.Date ? new Date(sale.Date).toLocaleDateString() : "";
+        return (
+          '<div class="item-card">' +
+          '<div class="item-header">' +
+          '<div class="item-title">' +
+          escapeHtml(sale.Item_Name || sale.Item_ID || "Item") +
+          "</div>" +
+          '<span class="status-badge ' +
+          statusClass +
+          '">' +
+          (sale.Status || "Completed") +
+          "</span>" +
+          "</div>" +
+          '<div class="item-meta">' +
+          '<span class="meta-tag price">$' +
+          formatNumber(sale.Total || 0) +
+          "</span>" +
+          '<span class="meta-tag">' +
+          (sale.Payment_Method || "Cash") +
+          "</span>" +
+          (date ? '<span class="meta-tag">' + date + "</span>" : "") +
+          "</div>" +
+          "</div>"
+        );
+      }
+
+      function renderPagination(containerId, currentPage, totalPages, fnName) {
+        var container = document.getElementById(containerId);
+        if (totalPages <= 1) {
+          container.innerHTML = "";
+          return;
+        }
+        container.innerHTML =
+          '<button class="pagination-btn" onclick="' +
+          fnName +
+          "(" +
+          (currentPage - 1) +
+          ')" ' +
+          (currentPage <= 1 ? "disabled" : "") +
+          ">&larr; Prev</button>" +
+          '<span class="pagination-info">Page ' +
+          currentPage +
+          " of " +
+          totalPages +
+          "</span>" +
+          '<button class="pagination-btn" onclick="' +
+          fnName +
+          "(" +
+          (currentPage + 1) +
+          ')" ' +
+          (currentPage >= totalPages ? "disabled" : "") +
+          ">Next &rarr;</button>";
+      }
+
+      function loadAvailableItems() {
+        google.script.run
+          .withSuccessHandler(function (items) {
+            AppState.availableItems = items;
+            var select = document.getElementById("sale-item-select");
+            select.innerHTML = '<option value="">Select item...</option>';
+            items.forEach(function (item) {
+              var opt = document.createElement("option");
+              opt.value = item.id;
+              opt.textContent = item.name + " - $" + item.price;
+              opt.dataset.price = item.price;
+              select.appendChild(opt);
+            });
+          })
+          .withFailureHandler(handleError)
+          .getAvailableItems();
+      }
+
+      function updateSalePrice() {
+        var select = document.getElementById("sale-item-select");
+        var priceInput = document.getElementById("sale-price");
+        var selectedOption = select.options[select.selectedIndex];
+        if (selectedOption && selectedOption.dataset.price) {
+          priceInput.value = selectedOption.dataset.price;
+        }
+      }
+
+      function loadWeeklySales() {
+        google.script.run
+          .withSuccessHandler(renderWeeklySales)
+          .withFailureHandler(handleError)
+          .getWeeklySales(8);
+      }
+
+      function renderWeeklySales(weeks) {
+        var container = document.getElementById("weekly-sales-container");
+        if (!weeks || weeks.length === 0) {
+          container.innerHTML =
+            '<div class="empty-state"><div class="empty-state-text">No weekly data</div></div>';
+          return;
+        }
+        container.innerHTML = weeks
+          .map(function (week) {
+            return (
+              '<div class="item-card">' +
+              '<div class="item-header">' +
+              '<div class="item-title">Week ' +
+              week.Week_ID +
+              "</div>" +
+              '<span class="meta-tag price">$' +
+              formatNumber(week.Total_Revenue || 0) +
+              "</span>" +
+              "</div>" +
+              '<div class="item-meta">' +
+              '<span class="meta-tag">' +
+              (week.Transactions || 0) +
+              " transactions</span>" +
+              '<span class="meta-tag">' +
+              (week.Items_Sold || 0) +
+              " items</span>" +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+
+      function showWeeklySales() {
+        switchPanel("tools");
+        loadWeeklySales();
+      }
+
+      function handleSearch(event) {
+        if (AppState.searchTimeout) clearTimeout(AppState.searchTimeout);
+        var query = event.target.value.trim();
+        if (query.length < 2) return;
+
+        AppState.searchTimeout = setTimeout(function () {
+          showLoading();
+          google.script.run
+            .withSuccessHandler(function (results) {
+              hideLoading();
+              switchPanel("inventory");
+              document.getElementById("inventory-list").innerHTML = results
+                .map(renderItemCard)
+                .join("");
+              document.getElementById("inventory-pagination").innerHTML = "";
+            })
+            .withFailureHandler(handleError)
+            .searchInventory(query);
+        }, 400);
+      }
+
+      function submitItem(event) {
+        event.preventDefault();
+        showLoading();
+        var form = document.getElementById("add-item-form");
+        var formData = new FormData(form);
+        var data = {};
+        formData.forEach(function (value, key) {
+          data[key] = value;
+        });
+
+        google.script.run
+          .withSuccessHandler(function (itemId) {
+            hideLoading();
+            showToast("Item added successfully!", "success");
+            form.reset();
+            loadDashboard();
+          })
+          .withFailureHandler(handleError)
+          .createItem(data);
+      }
+
+      function submitSale(event) {
+        event.preventDefault();
+        showLoading();
+        var form = document.getElementById("quick-sale-form");
+        var formData = new FormData(form);
+        var data = { Quantity: 1 };
+        formData.forEach(function (value, key) {
+          data[key] = value;
+        });
+
+        google.script.run
+          .withSuccessHandler(function (saleId) {
+            hideLoading();
+            showToast("Sale recorded!", "success");
+            form.reset();
+            loadDashboard();
+            loadAvailableItems();
+          })
+          .withFailureHandler(handleError)
+          .recordSale(data);
+      }
+
+      function exportCSV() {
+        showLoading();
+        google.script.run
+          .withSuccessHandler(function (csv) {
+            hideLoading();
+            downloadCSV(csv, "inventory_export.csv");
+            showToast("Export complete!", "success");
+          })
+          .withFailureHandler(handleError)
+          .exportInventoryCSV({});
+      }
+
+      function downloadCSV(csv, filename) {
+        var blob = new Blob([csv], { type: "text/csv" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function refreshData() {
+        showLoading();
+        loadDashboard();
+        showToast("Data refreshed!", "success");
+      }
+
+      function clearCaches() {
+        showToast("Cache cleared", "success");
+        AppState.inventory = {
+          items: [],
+          allItems: [],
+          page: 1,
+          totalPages: 1,
+          pageSize: 20,
+          total: 0
+        };
+        AppState.sales = { items: [], page: 1, totalPages: 1 };
+        loadDashboard();
+      }
+
+      // ============================================================================
+      // UI HELPERS
+      // ============================================================================
+      function showLoading() {
+        AppState.isLoading = true;
+        document.getElementById("loading").classList.remove("hidden");
+      }
+
+      function hideLoading() {
+        AppState.isLoading = false;
+        document.getElementById("loading").classList.add("hidden");
+      }
+
+      function showToast(message, type) {
+        var existingToast = document.querySelector(".toast");
+        if (existingToast) existingToast.remove();
+        var toast = document.createElement("div");
+        toast.className = "toast " + (type || "");
+        var icon =
+          type === "success"
+            ? "&#10003;"
+            : type === "error"
+            ? "&#10007;"
+            : "&#9888;";
+        toast.innerHTML =
+          "<span>" + icon + "</span><span>" + escapeHtml(message) + "</span>";
+        document.body.appendChild(toast);
+        setTimeout(function () {
+          toast.remove();
+        }, 3000);
+      }
+
+      // ============================================================================
+      // UTILITY FUNCTIONS
+      // ============================================================================
+
+      function formatNumber(num) {
+        return parseFloat(num || 0).toLocaleString("en-US", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        });
+      }
+
+      function escapeHtml(text) {
+        var div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Google-like colors */
+      --white: #ffffff;
+      --gray-50: #f8f9fa;
+      --gray-100: #f1f3f4;
+      --gray-200: #e8eaed;
+      --gray-300: #dadce0;
+      --gray-500: #9aa0a6;
+      --gray-700: #5f6368;
+      --gray-900: #202124;
+
+      /* Primary */
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --primary-light: #e8f0fe;
+
+      /* Status */
+      --success: #34a853;
+      --error: #ea4335;
+      --warning: #fbbc04;
+
+      /* Typography */
+      --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* Spacing */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 12px;
+      --space-lg: 16px;
+      --space-xl: 24px;
+
+      /* Border radius */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      font-size: 14px;
+      background: var(--white);
+      color: var(--gray-900);
+      padding: var(--space-lg);
+      line-height: 1.5;
+    }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-md);
+    }
+
+    .form-grid .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      margin-bottom: var(--space-md);
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gray-700);
+      margin-bottom: var(--space-xs);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      font-size: 14px;
+      font-family: var(--font-family);
+      background: var(--white);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      color: var(--gray-900);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    .form-input::placeholder {
+      color: var(--gray-500);
+    }
+
+    select.form-input {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235f6368' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    textarea.form-input {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      font-family: var(--font-family);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--primary);
+      border: 1px solid var(--gray-300);
+    }
+
+    .btn-secondary:hover {
+      background: var(--gray-50);
+      border-color: var(--primary);
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-sm);
+      margin-top: var(--space-lg);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--gray-200);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gray-900);
+      color: var(--white);
+      border-radius: var(--radius-sm);
+      padding: var(--space-md) var(--space-lg);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-size: 14px;
+      animation: slideUp 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--error); }
+
+    @keyframes slideUp {
+      from { transform: translate(-50%, 100%); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    /* Loading */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden { display: none !important; }
+
+    /* Price input */
+    .price-input-group {
+      position: relative;
+    }
+
+    .price-input-group::before {
+      content: '$';
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray-500);
+      font-size: 14px;
+    }
+
+    .price-input-group .form-input {
+      padding-left: 24px;
+    }
+
+    /* Sale form enhancements */
+    .item-info-card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+
+    .item-info-name {
+      font-weight: 500;
+      color: var(--gray-900);
+      margin-bottom: var(--space-xs);
+    }
+
+    .item-info-details {
+      display: flex;
+      gap: var(--space-lg);
+      font-size: 12px;
+      color: var(--gray-700);
+    }
+
+    .item-info-placeholder {
+      color: var(--gray-500);
+      font-style: italic;
+    }
+
+    /* Discount buttons */
+    .discount-buttons {
+      display: flex;
+      gap: var(--space-xs);
+      margin-top: var(--space-sm);
+    }
+
+    .discount-btn {
+      flex: 1;
+      padding: var(--space-xs) var(--space-sm);
+      font-family: var(--font-family);
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      color: var(--gray-700);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .discount-btn:hover {
+      background: var(--gray-200);
+    }
+
+    .discount-btn.active {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+
+    /* Margin preview */
+    .margin-preview {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      margin-top: var(--space-md);
+    }
+
+    .margin-preview-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gray-700);
+      margin-bottom: var(--space-sm);
+    }
+
+    .margin-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-sm);
+      text-align: center;
+    }
+
+    .margin-stat-label {
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-bottom: 2px;
+    }
+
+    .margin-stat-value {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .margin-excellent { color: var(--success); }
+    .margin-good { color: #34a853; }
+    .margin-fair { color: var(--warning); }
+    .margin-poor { color: var(--error); }
+
+    .margin-indicator {
+      font-size: 12px;
+      font-weight: 500;
+      padding: var(--space-sm);
+      border-radius: var(--radius-sm);
+      text-align: center;
+      margin-top: var(--space-sm);
+    }
+
+    .margin-indicator.excellent { background: #e6f4ea; color: var(--success); }
+    .margin-indicator.good { background: #e6f4ea; color: var(--success); }
+    .margin-indicator.fair { background: #fef7e0; color: #e37400; }
+    .margin-indicator.poor { background: #fce8e6; color: var(--error); }
+
+    /* Payment options */
+    .payment-options {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    .payment-option {
+      flex: 1;
+      min-width: 70px;
+    }
+
+    .payment-option input { display: none; }
+
+    .payment-option label {
+      display: block;
+      padding: var(--space-sm);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--white);
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .payment-option input:checked + label {
+      background: var(--primary);
+      color: var(--white);
+      border-color: var(--primary);
+    }
+
+    .payment-option label:hover {
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <!-- Add Item Form -->
+  <div id="item-form">
+    <form id="add-item-form" data-action="submit-item">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label class="form-label">Item Name *</label>
+          <input type="text" class="form-input" name="Name" required placeholder="Victorian Mahogany Writing Desk">
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Description</label>
+          <textarea class="form-input" name="Description" placeholder="Detailed description of the item..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input" name="Category_ID" id="category-select">
+            <option value="">Select category...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <select class="form-input" name="Location_ID" id="location-select">
+            <option value="">Select location...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Condition</label>
+          <select class="form-input" name="Condition" id="condition-select">
+            <option value="Good">Good</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Era/Period</label>
+          <select class="form-input" name="Era" id="era-select">
+            <option value="">Select era...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Price</label>
+          <div class="price-input-group">
+            <input type="number" class="form-input" name="Price" step="0.01" min="0" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cost</label>
+          <div class="price-input-group">
+            <input type="number" class="form-input" name="Cost" step="0.01" min="0" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input type="number" class="form-input" name="Quantity" min="1" value="1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">SKU</label>
+          <input type="text" class="form-input" name="SKU" placeholder="RSW-0001">
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Notes</label>
+          <textarea class="form-input" name="Notes" placeholder="Additional notes..."></textarea>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" data-action="close-dialog">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="submit-btn">Add Item</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Sale Form -->
+  <div id="sale-form" class="hidden">
+    <div class="item-info-card" id="item-info-header">
+      <div class="item-info-placeholder">Select an item to see details</div>
+    </div>
+
+    <form id="add-sale-form" data-action="submit-sale">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label class="form-label">Item *</label>
+          <select class="form-input" name="Item_ID" id="item-select" required data-action="item-selected">
+            <option value="">Select item...</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Sale Price</label>
+          <div class="price-input-group">
+            <input type="number" class="form-input" name="Unit_Price" id="sale-price" step="0.01" min="0" required data-action="update-margin">
+          </div>
+          <div class="discount-buttons" id="discount-buttons">
+            <button type="button" class="discount-btn" data-action="apply-discount" data-discount="0">Full Price</button>
+            <button type="button" class="discount-btn" data-action="apply-discount" data-discount="5">-5%</button>
+            <button type="button" class="discount-btn" data-action="apply-discount" data-discount="10">-10%</button>
+            <button type="button" class="discount-btn" data-action="apply-discount" data-discount="15">-15%</button>
+            <button type="button" class="discount-btn" data-action="apply-discount" data-discount="20">-20%</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Customer</label>
+          <select class="form-input" name="Customer_ID" id="customer-select">
+            <option value="">Walk-in customer</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input type="number" class="form-input" name="Quantity" id="sale-quantity" value="1" min="1" data-action="update-margin">
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Payment Method</label>
+          <div class="payment-options" id="payment-options"></div>
+          <input type="hidden" name="Payment_Method" id="payment-method-input" value="Cash">
+        </div>
+
+        <div class="form-group full-width">
+          <div class="margin-preview" id="margin-preview">
+            <div class="margin-preview-title">Sale Preview</div>
+            <div class="margin-preview-grid">
+              <div class="margin-stat">
+                <div class="margin-stat-label">Sale Total</div>
+                <div class="margin-stat-value" id="preview-total">$0</div>
+              </div>
+              <div class="margin-stat">
+                <div class="margin-stat-label">Your Cost</div>
+                <div class="margin-stat-value" id="preview-cost">$0</div>
+              </div>
+              <div class="margin-stat">
+                <div class="margin-stat-label">Profit</div>
+                <div class="margin-stat-value" id="preview-profit">$0</div>
+              </div>
+            </div>
+            <div class="margin-indicator" id="margin-indicator">Select an item</div>
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Notes</label>
+          <textarea class="form-input" name="Notes" placeholder="Sale notes..."></textarea>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" data-action="close-dialog">Cancel</button>
+        <button type="submit" class="btn btn-primary">Record Sale</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Customer Form -->
+  <div id="customer-form" class="hidden">
+    <form id="add-customer-form" data-action="submit-customer">
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label class="form-label">Name *</label>
+          <input type="text" class="form-input" name="Name" required placeholder="John Smith">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" name="Email" placeholder="john@example.com">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-input" name="Phone" placeholder="(555) 123-4567">
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Address</label>
+          <textarea class="form-input" name="Address" placeholder="123 Main St, City, State 12345"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Preferred Contact</label>
+          <select class="form-input" name="Preferred_Contact">
+            <option value="Email">Email</option>
+            <option value="Phone">Phone</option>
+            <option value="Text">Text</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label class="form-label">Notes</label>
+          <textarea class="form-input" name="Notes" placeholder="Customer notes..."></textarea>
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-secondary" data-action="close-dialog">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Customer</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="loading" class="loading-overlay hidden">
+    <div class="loading-spinner"></div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // STATE MANAGEMENT
+    // ============================================================================
+    var DialogState = {
+      availableItems: [],
+      selectedItem: null,
+      originalPrice: 0,
+      isLoading: false
+    };
+
+    // ============================================================================
+    // INITIALIZATION
+    // ============================================================================
+    document.addEventListener('DOMContentLoaded', init);
+
+    function init() {
+      setupEventDelegation();
+      loadFormData();
+    }
+
+    // ============================================================================
+    // EVENT DELEGATION
+    // ============================================================================
+    function setupEventDelegation() {
+      // Single event listener for all clicks
+      document.body.addEventListener('click', handleClick);
+
+      // Single event listener for form submissions
+      document.body.addEventListener('submit', handleSubmit);
+
+      // Single event listener for input/select changes
+      document.body.addEventListener('change', handleChange);
+
+      // Single event listener for input events
+      document.body.addEventListener('input', handleInput);
+    }
+
+    function handleClick(event) {
+      var target = event.target;
+      var action = target.dataset.action || target.closest('[data-action]')?.dataset.action;
+
+      if (!action) return;
+
+      switch (action) {
+        case 'close-dialog':
+          event.preventDefault();
+          closeDialog();
+          break;
+        case 'apply-discount':
+          event.preventDefault();
+          var discount = parseInt(target.dataset.discount || target.closest('[data-discount]').dataset.discount);
+          applyDiscount(discount);
+          break;
+      }
+    }
+
+    function handleSubmit(event) {
+      var target = event.target;
+      var action = target.dataset.action;
+
+      if (!action) return;
+
+      event.preventDefault();
+
+      switch (action) {
+        case 'submit-item':
+          submitItem(event);
+          break;
+        case 'submit-sale':
+          submitSale(event);
+          break;
+        case 'submit-customer':
+          submitCustomer(event);
+          break;
+      }
+    }
+
+    function handleChange(event) {
+      var target = event.target;
+      var action = target.dataset.action;
+
+      if (!action) return;
+
+      switch (action) {
+        case 'item-selected':
+          onItemSelected();
+          break;
+        case 'payment-method':
+          selectPayment(target.value);
+          break;
+      }
+    }
+
+    function handleInput(event) {
+      var target = event.target;
+      var action = target.dataset.action;
+
+      if (!action) return;
+
+      switch (action) {
+        case 'update-margin':
+          updateMarginPreview();
+          break;
+      }
+    }
+
+    // ============================================================================
+    // ERROR HANDLING
+    // ============================================================================
+    function handleError(error) {
+      hideLoading();
+      var message = error.message || error.toString() || 'An unexpected error occurred';
+      showToast(message, 'error');
+      console.error('Error:', error);
+    }
+
+    // ============================================================================
+    // DATA LOADING
+    // ============================================================================
+
+    function loadFormData() {
+      google.script.run
+        .withSuccessHandler(function(categories) {
+          var select = document.getElementById('category-select');
+          categories.forEach(function(cat) {
+            var option = document.createElement('option');
+            option.value = cat.Category_ID;
+            option.textContent = cat.Name;
+            select.appendChild(option);
+          });
+        })
+        .withFailureHandler(handleError)
+        .getCategoriesList();
+
+      google.script.run
+        .withSuccessHandler(function(locations) {
+          var select = document.getElementById('location-select');
+          locations.forEach(function(loc) {
+            var option = document.createElement('option');
+            option.value = loc.Location_ID;
+            option.textContent = loc.Name;
+            select.appendChild(option);
+          });
+        })
+        .withFailureHandler(handleError)
+        .getLocations();
+
+      google.script.run
+        .withSuccessHandler(function(config) {
+          var conditionSelect = document.getElementById('condition-select');
+          conditionSelect.innerHTML = '';
+          config.conditions.forEach(function(c) {
+            var option = document.createElement('option');
+            option.value = c;
+            option.textContent = c;
+            conditionSelect.appendChild(option);
+          });
+
+          var eraSelect = document.getElementById('era-select');
+          eraSelect.innerHTML = '<option value="">Select era...</option>';
+          config.eras.forEach(function(e) {
+            var option = document.createElement('option');
+            option.value = e;
+            option.textContent = e;
+            eraSelect.appendChild(option);
+          });
+
+          var paymentOptions = document.getElementById('payment-options');
+          if (paymentOptions) {
+            paymentOptions.innerHTML = '';
+            config.paymentMethods.forEach(function(p, index) {
+              var div = document.createElement('div');
+              div.className = 'payment-option';
+              div.innerHTML = '<input type="radio" id="payment-' + index + '" name="payment_radio" value="' + p + '"' + (index === 0 ? ' checked' : '') + ' onchange="selectPayment(\'' + p + '\')">' +
+                '<label for="payment-' + index + '">' + p + '</label>';
+              paymentOptions.appendChild(div);
+            });
+          }
+        })
+        .withFailureHandler(handleError)
+        .getConfig();
+
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.items) {
+            DialogState.availableItems = result.items;
+          } else {
+            DialogState.availableItems = result || [];
+          }
+          var select = document.getElementById('item-select');
+          if (select) {
+            DialogState.availableItems.forEach(function(item) {
+              var option = document.createElement('option');
+              option.value = item.Item_ID || item.id;
+              option.textContent = (item.Name || item.name) + ' - $' + (item.Price || item.price);
+              option.dataset.price = item.Price || item.price;
+              option.dataset.cost = item.Cost || 0;
+              option.dataset.name = item.Name || item.name;
+              option.dataset.quantity = item.Quantity || item.quantity || 1;
+              select.appendChild(option);
+            });
+          }
+        })
+        .withFailureHandler(handleError)
+        .getInventory({ page: 1, pageSize: 500, filters: { Status: 'Available' } });
+
+      google.script.run
+        .withSuccessHandler(function(customers) {
+          var select = document.getElementById('customer-select');
+          if (select) {
+            customers.forEach(function(c) {
+              var option = document.createElement('option');
+              option.value = c.Customer_ID;
+              option.textContent = c.Name;
+              select.appendChild(option);
+            });
+          }
+        })
+        .withFailureHandler(handleError)
+        .getCustomers();
+    }
+
+    function selectPayment(method) {
+      document.getElementById('payment-method-input').value = method;
+    }
+
+    // ============================================================================
+    // SALE FORM LOGIC
+    // ============================================================================
+    function onItemSelected() {
+      var select = document.getElementById('item-select');
+      var priceInput = document.getElementById('sale-price');
+      var headerEl = document.getElementById('item-info-header');
+      var selectedOption = select.options[select.selectedIndex];
+
+      if (selectedOption && selectedOption.value) {
+        var price = parseFloat(selectedOption.dataset.price) || 0;
+        var cost = parseFloat(selectedOption.dataset.cost) || 0;
+        var name = selectedOption.dataset.name || 'Unknown';
+        var qty = parseInt(selectedOption.dataset.quantity) || 1;
+
+        DialogState.selectedItem = { price: price, cost: cost, name: name, quantity: qty };
+        DialogState.originalPrice = price;
+        priceInput.value = price;
+
+        var margin = cost > 0 ? ((price - cost) / cost * 100).toFixed(0) : '--';
+        headerEl.innerHTML = '<div class="item-info-name">' + escapeHtml(name) + '</div>' +
+          '<div class="item-info-details">' +
+            '<span>List: $' + formatNumber(price) + '</span>' +
+            '<span>Cost: $' + formatNumber(cost) + '</span>' +
+            '<span>Margin: ' + margin + '%</span>' +
+            '<span>Stock: ' + qty + '</span>' +
+          '</div>';
+
+        clearDiscountButtons();
+        updateMarginPreview();
+      } else {
+        DialogState.selectedItem = null;
+        DialogState.originalPrice = 0;
+        priceInput.value = '';
+        headerEl.innerHTML = '<div class="item-info-placeholder">Select an item to see details</div>';
+        updateMarginPreview();
+      }
+    }
+
+    function applyDiscount(percent) {
+      if (!DialogState.selectedItem || !DialogState.originalPrice) return;
+
+      var priceInput = document.getElementById('sale-price');
+      var newPrice = DialogState.originalPrice * (1 - percent / 100);
+      priceInput.value = newPrice.toFixed(2);
+
+      clearDiscountButtons();
+      document.querySelectorAll('.discount-btn').forEach(function(btn) {
+        var btnPercent = parseInt(btn.textContent.replace(/[^0-9]/g, '')) || 0;
+        if ((percent === 0 && btn.textContent === 'Full Price') || btnPercent === percent) {
+          btn.classList.add('active');
+        }
+      });
+
+      updateMarginPreview();
+    }
+
+    function clearDiscountButtons() {
+      document.querySelectorAll('.discount-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+    }
+
+    function updateMarginPreview() {
+      var priceInput = document.getElementById('sale-price');
+      var quantityInput = document.getElementById('sale-quantity');
+      var salePrice = parseFloat(priceInput.value) || 0;
+      var quantity = parseInt(quantityInput.value) || 1;
+
+      var cost = DialogState.selectedItem ? DialogState.selectedItem.cost : 0;
+      var totalSale = salePrice * quantity;
+      var totalCost = cost * quantity;
+      var profit = totalSale - totalCost;
+      var marginPercent = cost > 0 ? ((salePrice - cost) / cost * 100) : 0;
+
+      document.getElementById('preview-total').textContent = '$' + formatNumber(totalSale);
+      document.getElementById('preview-cost').textContent = '$' + formatNumber(totalCost);
+
+      var profitEl = document.getElementById('preview-profit');
+      profitEl.textContent = '$' + formatNumber(profit);
+      profitEl.className = 'margin-stat-value';
+      if (profit > 0) {
+        profitEl.classList.add(marginPercent >= 100 ? 'margin-excellent' : marginPercent >= 50 ? 'margin-good' : marginPercent >= 30 ? 'margin-fair' : 'margin-poor');
+      } else {
+        profitEl.classList.add('margin-poor');
+      }
+
+      var indicatorEl = document.getElementById('margin-indicator');
+      if (!DialogState.selectedItem) {
+        indicatorEl.textContent = 'Select an item';
+        indicatorEl.className = 'margin-indicator';
+      } else if (cost === 0) {
+        indicatorEl.textContent = 'No cost data';
+        indicatorEl.className = 'margin-indicator';
+      } else {
+        var status, statusClass;
+        if (marginPercent >= 100) {
+          status = 'Excellent Margin (' + marginPercent.toFixed(0) + '%)';
+          statusClass = 'excellent';
+        } else if (marginPercent >= 50) {
+          status = 'Good Margin (' + marginPercent.toFixed(0) + '%)';
+          statusClass = 'good';
+        } else if (marginPercent >= 30) {
+          status = 'Fair Margin (' + marginPercent.toFixed(0) + '%)';
+          statusClass = 'fair';
+        } else if (marginPercent > 0) {
+          status = 'Low Margin (' + marginPercent.toFixed(0) + '%)';
+          statusClass = 'poor';
+        } else {
+          status = 'Loss Sale!';
+          statusClass = 'poor';
+        }
+        indicatorEl.textContent = status;
+        indicatorEl.className = 'margin-indicator ' + statusClass;
+      }
+    }
+
+    // ============================================================================
+    // FORM SUBMISSIONS
+    // ============================================================================
+    function submitItem(event) {
+      event.preventDefault();
+      showLoading();
+
+      var form = document.getElementById('add-item-form');
+      var formData = new FormData(form);
+      var data = {};
+      formData.forEach(function(value, key) { data[key] = value; });
+
+      google.script.run
+        .withSuccessHandler(function(itemId) {
+          hideLoading();
+          showToast('Item added successfully!', 'success');
+          setTimeout(closeDialog, 1500);
+        })
+        .withFailureHandler(handleError)
+        .createItem(data);
+    }
+
+    function submitSale(event) {
+      event.preventDefault();
+      showLoading();
+
+      var form = document.getElementById('add-sale-form');
+      var formData = new FormData(form);
+      var data = {};
+      formData.forEach(function(value, key) { data[key] = value; });
+
+      google.script.run
+        .withSuccessHandler(function(saleId) {
+          hideLoading();
+          showToast('Sale recorded!', 'success');
+          setTimeout(closeDialog, 1500);
+        })
+        .withFailureHandler(handleError)
+        .recordSale(data);
+    }
+
+    function submitCustomer(event) {
+      event.preventDefault();
+      showLoading();
+
+      var form = document.getElementById('add-customer-form');
+      var formData = new FormData(form);
+      var data = {};
+      formData.forEach(function(value, key) { data[key] = value; });
+
+      google.script.run
+        .withSuccessHandler(function(customerId) {
+          hideLoading();
+          showToast('Customer added!', 'success');
+          setTimeout(closeDialog, 1500);
+        })
+        .withFailureHandler(handleError)
+        .createCustomer(data);
+    }
+
+    // ============================================================================
+    // UI HELPERS
+    // ============================================================================
+    function showLoading() {
+      DialogState.isLoading = true;
+      document.getElementById('loading').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      DialogState.isLoading = false;
+      document.getElementById('loading').classList.add('hidden');
+    }
+
+    function showToast(message, type) {
+      var existingToast = document.querySelector('.toast');
+      if (existingToast) existingToast.remove();
+
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + (type || '');
+      toast.innerHTML = '<span>' + (type === 'success' ? '&#10003;' : '&#10007;') + '</span><span>' + escapeHtml(message) + '</span>';
+      document.body.appendChild(toast);
+
+      setTimeout(function() { toast.remove(); }, 3000);
+    }
+
+    function closeDialog() {
+      google.script.host.close();
+    }
+
+    // ============================================================================
+    // UTILITY FUNCTIONS
+    // ============================================================================
+    function formatNumber(num) {
+      return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    function escapeHtml(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
