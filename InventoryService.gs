@@ -116,6 +116,28 @@ const InventoryService = (function() {
       throw new Error('Item name is required');
     }
 
+    // Validate foreign keys
+    if (data.Category_ID) {
+      const category = DataService.getById(CONFIG.SHEETS.CATEGORIES, data.Category_ID);
+      if (!category) {
+        throw new Error(`Invalid Category_ID: ${data.Category_ID}`);
+      }
+    }
+
+    if (data.Location_ID) {
+      const location = DataService.getById(CONFIG.SHEETS.LOCATIONS, data.Location_ID);
+      if (!location) {
+        throw new Error(`Invalid Location_ID: ${data.Location_ID}`);
+      }
+    }
+
+    if (data.Parent_ID) {
+      const parentItem = DataService.getById(CONFIG.SHEETS.INVENTORY, data.Parent_ID);
+      if (!parentItem) {
+        throw new Error(`Invalid Parent_ID: ${data.Parent_ID}`);
+      }
+    }
+
     // Sanitize and validate inputs using Utils
     const sanitizedData = {
       Name: Utils.sanitizeString(data.Name, CONFIG.VALIDATION.MAX_NAME_LENGTH),

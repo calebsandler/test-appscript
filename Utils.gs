@@ -330,6 +330,51 @@ const Utils = (function() {
     }
   }
 
+  /**
+   * Standardized error wrapper for API functions
+   * Returns raw data on success (for backwards compatibility with frontend)
+   * Returns { success: false, error: message } on failure
+   * @param {Function} operation - Function to execute
+   * @param {string} context - Context description for error logging
+   * @returns {*} Raw result on success, or error object on failure
+   */
+  function wrapApiCall(operation, context) {
+    try {
+      return operation();
+    } catch (error) {
+      console.error(`[${context}] ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // LOGGER UTILITY
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /**
+   * Structured logging utility with levels and tags
+   * Respects CONFIG.ENVIRONMENT.DEBUG for debug-level messages
+   */
+  const Logger = {
+    _log: function(level, tag, message, data) {
+      const timestamp = new Date().toISOString();
+      const logEntry = `[${timestamp}][${level}][${tag}] ${message}`;
+      if (data) {
+        console[level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'log'](logEntry, data);
+      } else {
+        console[level === 'ERROR' ? 'error' : level === 'WARN' ? 'warn' : 'log'](logEntry);
+      }
+    },
+    debug: function(tag, message, data) {
+      if (CONFIG.ENVIRONMENT && CONFIG.ENVIRONMENT.DEBUG) {
+        this._log('DEBUG', tag, message, data);
+      }
+    },
+    info: function(tag, message, data) { this._log('INFO', tag, message, data); },
+    warn: function(tag, message, data) { this._log('WARN', tag, message, data); },
+    error: function(tag, message, error) { this._log('ERROR', tag, message, error); }
+  };
+
   // ═══════════════════════════════════════════════════════════════════════
   // PUBLIC API
   // ═══════════════════════════════════════════════════════════════════════
@@ -363,7 +408,9 @@ const Utils = (function() {
     // Error handling
     successResponse,
     errorResponse,
-    safeExecute
+    safeExecute,
+    wrapApiCall,
+    Logger
   };
 
 })();

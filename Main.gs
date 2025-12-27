@@ -42,7 +42,9 @@ function doGet(e) {
  * This triggers OAuth if user hasn't authorized yet
  */
 function getCurrentUser() {
-  return AccessControlService.getCurrentUser();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.getCurrentUser());
+  }, 'getCurrentUser');
 }
 
 /**
@@ -51,7 +53,9 @@ function getCurrentUser() {
  * @returns {Object} { valid: boolean, expiresAt: string }
  */
 function verifyPassphrase(input) {
-  return AccessControlService.verifyPassphrase(input);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.verifyPassphrase(input));
+  }, 'verifyPassphrase');
 }
 
 /**
@@ -59,7 +63,9 @@ function verifyPassphrase(input) {
  * @returns {Object} Current passphrase configuration
  */
 function getPassphraseSettings() {
-  return AccessControlService.getPassphraseSettings();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.getPassphraseSettings());
+  }, 'getPassphraseSettings');
 }
 
 /**
@@ -68,14 +74,18 @@ function getPassphraseSettings() {
  * @returns {Object} Result
  */
 function setPassphraseSettings(settings) {
-  return AccessControlService.setPassphraseSettings(settings);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.setPassphraseSettings(settings));
+  }, 'setPassphraseSettings');
 }
 
 /**
  * Check if current session is the script owner (for admin functions)
  */
 function isOwner() {
-  return AccessControlService.isOwner();
+  return Utils.wrapApiCall(() => {
+    return AccessControlService.isOwner();
+  }, 'isOwner');
 }
 
 /**
@@ -83,14 +93,18 @@ function isOwner() {
  * Called from the sign-in page to force Google's consent screen
  */
 function triggerAuth() {
-  return AccessControlService.triggerAuth();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.triggerAuth());
+  }, 'triggerAuth');
 }
 
 /**
  * Get the script owner's email (always has access and is always admin)
  */
 function getScriptOwner() {
-  return AccessControlService.getScriptOwner();
+  return Utils.wrapApiCall(() => {
+    return AccessControlService.getScriptOwner();
+  }, 'getScriptOwner');
 }
 
 /**
@@ -99,7 +113,9 @@ function getScriptOwner() {
  * @returns {Object} { allowed: boolean, isAdmin: boolean }
  */
 function checkUserAccess(email) {
-  return AccessControlService.checkUserAccess(email);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.checkUserAccess(email));
+  }, 'checkUserAccess');
 }
 
 /**
@@ -107,7 +123,9 @@ function checkUserAccess(email) {
  * @returns {Array} Array of { email, isAdmin, addedBy, addedAt }
  */
 function getAllowedUsers() {
-  return AccessControlService.getAllowedUsers();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.getAllowedUsers());
+  }, 'getAllowedUsers');
 }
 
 /**
@@ -117,7 +135,9 @@ function getAllowedUsers() {
  * @returns {Object} Result with success status
  */
 function addAllowedUser(email, isAdmin = false) {
-  return AccessControlService.addAllowedUser(email, isAdmin);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.addAllowedUser(email, isAdmin));
+  }, 'addAllowedUser');
 }
 
 /**
@@ -126,7 +146,9 @@ function addAllowedUser(email, isAdmin = false) {
  * @returns {Object} Result with success status
  */
 function removeAllowedUser(email) {
-  return AccessControlService.removeAllowedUser(email);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.removeAllowedUser(email));
+  }, 'removeAllowedUser');
 }
 
 /**
@@ -136,7 +158,9 @@ function removeAllowedUser(email) {
  * @returns {Object} Result with success status
  */
 function updateUserAdmin(email, isAdmin) {
-  return AccessControlService.updateUserAdmin(email, isAdmin);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.updateUserAdmin(email, isAdmin));
+  }, 'updateUserAdmin');
 }
 
 /**
@@ -144,7 +168,9 @@ function updateUserAdmin(email, isAdmin) {
  * @returns {Object} Current user info and access details
  */
 function getAccessInfo() {
-  return AccessControlService.getAccessInfo();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(AccessControlService.getAccessInfo());
+  }, 'getAccessInfo');
 }
 
 /**
@@ -598,35 +624,120 @@ function _apiResponse(operation) {
  * Get configuration for frontend
  */
 function getConfig() {
-  return {
-    version: CONFIG.VERSION,
-    appName: CONFIG.APP_NAME,
-    colors: CONFIG.COLORS,
-    itemStatus: CONFIG.ITEM_STATUS,
-    conditions: CONFIG.CONDITIONS,
-    eras: CONFIG.ERAS,
-    paymentMethods: CONFIG.PAYMENT_METHODS,
-    variantTypes: CONFIG.VARIANT_TYPES,
-    pageSize: CONFIG.PERFORMANCE.PAGE_SIZE,
-  };
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient({
+      version: CONFIG.VERSION,
+      appName: CONFIG.APP_NAME,
+      colors: CONFIG.COLORS,
+      itemStatus: CONFIG.ITEM_STATUS,
+      conditions: CONFIG.CONDITIONS,
+      eras: CONFIG.ERAS,
+      paymentMethods: CONFIG.PAYMENT_METHODS,
+      variantTypes: CONFIG.VARIANT_TYPES,
+      pageSize: CONFIG.PERFORMANCE.PAGE_SIZE,
+    });
+  }, 'getConfig');
 }
 
 /**
  * Get dashboard data
  */
 function getDashboard() {
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient({
+      inventory: InventoryService.getDashboardStats(),
+      sales: SalesService.getDashboardStats(),
+    });
+  }, 'getDashboard');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DASHBOARD V2 HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get quick stats from cache - Returns inventory counts and values
+ * Used internally by getDashboardV2 for fast initial load
+ * @returns {Object} Quick stats data with inventory and sales info
+ */
+function getQuickStatsCached() {
+  const quickStats = DashboardCacheService.getMetricsByCategory("quick_stats");
+  const recent = DashboardCacheService.getMetricsByCategory("recent");
+
   return {
-    inventory: InventoryService.getDashboardStats(),
-    sales: SalesService.getDashboardStats(),
+    inventory: {
+      totalItems: quickStats.inventory_total_items || 0,
+      availableItems: quickStats.inventory_available_count || 0,
+      totalValue: quickStats.inventory_total_value || 0,
+      recentItems: recent.recent_items || [],
+    },
+    sales: {
+      weeklyRevenue: quickStats.sales_weekly_revenue || 0,
+      recentSales: recent.recent_sales || [],
+    },
+  };
+}
+
+/**
+ * Get health metrics from cache - Returns health score data
+ * @returns {Object} Health metrics including score, turnover rate, aging count, etc.
+ */
+function getHealthMetrics() {
+  const health = DashboardCacheService.getMetricsByCategory("health");
+
+  return {
+    inventoryHealthScore: health.health_score || 0,
+    turnoverRate: health.health_turnover_rate || 0,
+    agingItemCount: health.health_aging_count || 0,
+    blendedMargin: health.health_blended_margin || 0,
+    averageVelocity: health.health_avg_velocity || 0,
+  };
+}
+
+/**
+ * Get today's summary from cache - Returns today's sales summary
+ * @returns {Object} Today's summary with revenue, items sold, margin, and comparison
+ */
+function getTodaySummaryCached() {
+  const today = DashboardCacheService.getMetricsByCategory("today");
+
+  return {
+    revenue: today.today_revenue || 0,
+    itemsSold: today.today_items_sold || 0,
+    avgMargin: today.today_avg_margin || 0,
+    vsLastWeek: today.today_vs_last_week || 0,
+  };
+}
+
+/**
+ * Get action items from cache - Returns action items list
+ * @returns {Array} List of action items requiring attention
+ */
+function getActionItemsCached() {
+  const actions = DashboardCacheService.getMetric("action_items");
+  return actions || [];
+}
+
+/**
+ * Get chart data from cache - Returns category performance and weekly revenue
+ * @returns {Object} Chart data with categoryPerformance and weeklyRevenue arrays
+ */
+function getChartDataCached() {
+  const charts = DashboardCacheService.getMetricsByCategory("charts");
+
+  return {
+    categoryPerformance: charts.category_performance || [],
+    weeklyRevenue: charts.weekly_revenue || [],
   };
 }
 
 /**
  * Get enhanced dashboard data (V2) - Cache-first with fallback
  * Returns health score, action items, charts data, etc.
+ * Orchestrates the smaller focused functions for dashboard data retrieval.
  */
 function getDashboardV2() {
-  try {
+  return Utils.wrapApiCall(() => {
     // Check if we have cached data
     const quickStats =
       DashboardCacheService.getMetricsByCategory("quick_stats");
@@ -634,60 +745,39 @@ function getDashboardV2() {
 
     // If cache exists and not empty, use cache-first approach
     if (hasCachedData) {
-      const health = DashboardCacheService.getMetricsByCategory("health");
-      const today = DashboardCacheService.getMetricsByCategory("today");
-      const charts = DashboardCacheService.getMetricsByCategory("charts");
-      const recent = DashboardCacheService.getMetricsByCategory("recent");
-      const actions = DashboardCacheService.getMetric("action_items");
+      const healthMetrics = getHealthMetrics();
+      const todaySummary = getTodaySummaryCached();
+      const chartData = getChartDataCached();
+      const actionItems = getActionItemsCached();
+      const quickStatsData = getQuickStatsCached();
 
-      return {
+      return sanitizeForClient({
         // Health score and metrics
-        inventoryHealthScore: health.health_score || 0,
-        turnoverRate: health.health_turnover_rate || 0,
-        agingItemCount: health.health_aging_count || 0,
-        blendedMargin: health.health_blended_margin || 0,
-        averageVelocity: health.health_avg_velocity || 0,
+        ...healthMetrics,
 
         // Action items
-        actionItems: actions || [],
+        actionItems: actionItems,
 
         // Today's summary
-        todaySummary: {
-          revenue: today.today_revenue || 0,
-          itemsSold: today.today_items_sold || 0,
-          avgMargin: today.today_avg_margin || 0,
-          vsLastWeek: today.today_vs_last_week || 0,
-        },
+        todaySummary: todaySummary,
 
         // Chart data
-        categoryPerformance: charts.category_performance || [],
-        weeklyRevenue: charts.weekly_revenue || [],
+        categoryPerformance: chartData.categoryPerformance,
+        weeklyRevenue: chartData.weeklyRevenue,
 
         // Legacy/compatibility
-        inventory: {
-          totalItems: quickStats.inventory_total_items || 0,
-          availableItems: quickStats.inventory_available_count || 0,
-          totalValue: quickStats.inventory_total_value || 0,
-          recentItems: recent.recent_items || [],
-        },
-        sales: {
-          weeklyRevenue: quickStats.sales_weekly_revenue || 0,
-          recentSales: recent.recent_sales || [],
-        },
+        inventory: quickStatsData.inventory,
+        sales: quickStatsData.sales,
 
         // Flag that this is from cache
         fromCache: true,
-      };
+      });
     }
 
     // No cache - compute everything fresh
     console.log("No cache found, computing fresh dashboard data");
-    return computeFreshDashboard();
-  } catch (error) {
-    console.error("Error in getDashboardV2:", error);
-    // Fallback - compute fresh without caching
-    return computeFreshDashboard();
-  }
+    return sanitizeForClient(computeFreshDashboard());
+  }, 'getDashboardV2');
 }
 
 /**
@@ -748,127 +838,135 @@ function computeFreshDashboard() {
  * Returns minimal data from cache for immediate display
  */
 function getQuickStats() {
-  const cached = DashboardCacheService.getMetricsByCategory("quick_stats");
+  return Utils.wrapApiCall(() => {
+    const cached = DashboardCacheService.getMetricsByCategory("quick_stats");
 
-  if (Object.keys(cached).length > 0) {
-    return {
-      totalItems: cached.inventory_total_items || 0,
-      availableItems: cached.inventory_available_count || 0,
-      totalValue: cached.inventory_total_value || 0,
-      weeklyRevenue: cached.sales_weekly_revenue || 0,
-      fromCache: true,
-    };
-  }
+    if (Object.keys(cached).length > 0) {
+      return sanitizeForClient({
+        totalItems: cached.inventory_total_items || 0,
+        availableItems: cached.inventory_available_count || 0,
+        totalValue: cached.inventory_total_value || 0,
+        weeklyRevenue: cached.sales_weekly_revenue || 0,
+        fromCache: true,
+      });
+    }
 
-  // Fallback: compute fresh
-  const invStats = InventoryService.getDashboardStats();
-  const salesStats = SalesService.getDashboardStats();
+    // Fallback: compute fresh
+    const invStats = InventoryService.getDashboardStats();
+    const salesStats = SalesService.getDashboardStats();
 
-  // Update cache for next time
-  DashboardCacheService.setMetric("inventory_total_items", invStats.totalItems);
-  DashboardCacheService.setMetric(
-    "inventory_available_count",
-    invStats.availableItems
-  );
-  DashboardCacheService.setMetric("inventory_total_value", invStats.totalValue);
-  DashboardCacheService.setMetric(
-    "sales_weekly_revenue",
-    salesStats.weeklyRevenue
-  );
+    // Update cache for next time
+    DashboardCacheService.setMetric("inventory_total_items", invStats.totalItems);
+    DashboardCacheService.setMetric(
+      "inventory_available_count",
+      invStats.availableItems
+    );
+    DashboardCacheService.setMetric("inventory_total_value", invStats.totalValue);
+    DashboardCacheService.setMetric(
+      "sales_weekly_revenue",
+      salesStats.weeklyRevenue
+    );
 
-  return {
-    totalItems: invStats.totalItems,
-    availableItems: invStats.availableItems,
-    totalValue: invStats.totalValue,
-    weeklyRevenue: salesStats.weeklyRevenue,
-    fromCache: false,
-  };
+    return sanitizeForClient({
+      totalItems: invStats.totalItems,
+      availableItems: invStats.availableItems,
+      totalValue: invStats.totalValue,
+      weeklyRevenue: salesStats.weeklyRevenue,
+      fromCache: false,
+    });
+  }, 'getQuickStats');
 }
 
 /**
  * Get chart data separately (for deferred load)
  */
 function getChartData() {
-  const cached = DashboardCacheService.getMetricsByCategory("charts");
+  return Utils.wrapApiCall(() => {
+    const cached = DashboardCacheService.getMetricsByCategory("charts");
 
-  if (cached.category_performance && cached.weekly_revenue) {
-    return {
-      categoryPerformance: cached.category_performance,
-      weeklyRevenue: cached.weekly_revenue,
-      fromCache: true,
-    };
-  }
+    if (cached.category_performance && cached.weekly_revenue) {
+      return sanitizeForClient({
+        categoryPerformance: cached.category_performance,
+        weeklyRevenue: cached.weekly_revenue,
+        fromCache: true,
+      });
+    }
 
-  // Fallback: compute fresh
-  const categoryPerformance = SalesService.getCategoryPerformance();
-  const weeklyRevenue = SalesService.getWeeklyRevenue(12);
+    // Fallback: compute fresh
+    const categoryPerformance = SalesService.getCategoryPerformance();
+    const weeklyRevenue = SalesService.getWeeklyRevenue(12);
 
-  DashboardCacheService.setMetric("category_performance", categoryPerformance);
-  DashboardCacheService.setMetric("weekly_revenue", weeklyRevenue);
+    DashboardCacheService.setMetric("category_performance", categoryPerformance);
+    DashboardCacheService.setMetric("weekly_revenue", weeklyRevenue);
 
-  return {
-    categoryPerformance,
-    weeklyRevenue,
-    fromCache: false,
-  };
+    return sanitizeForClient({
+      categoryPerformance,
+      weeklyRevenue,
+      fromCache: false,
+    });
+  }, 'getChartData');
 }
 
 /**
  * Get recent activity (for deferred load)
  */
 function getRecentActivity() {
-  const cached = DashboardCacheService.getMetricsByCategory("recent");
+  return Utils.wrapApiCall(() => {
+    const cached = DashboardCacheService.getMetricsByCategory("recent");
 
-  if (cached.recent_sales && cached.recent_items) {
-    return {
-      recentSales: cached.recent_sales,
-      recentItems: cached.recent_items,
-      fromCache: true,
-    };
-  }
+    if (cached.recent_sales && cached.recent_items) {
+      return sanitizeForClient({
+        recentSales: cached.recent_sales,
+        recentItems: cached.recent_items,
+        fromCache: true,
+      });
+    }
 
-  // Fallback: compute fresh
-  const sales = DataService.getAll(CONFIG.SHEETS.SALES, {
-    filters: { Status: CONFIG.DEFAULTS.SALE_STATUS },
-  });
-  const items = InventoryService.getItems({ includeCategory: true });
-
-  // Build lookup map once instead of using .find() in a loop (eliminates N+1)
-  const itemsMap = Utils.buildLookupMap(items, 'Item_ID');
-
-  const recentSales = sales
-    .sort((a, b) => new Date(b.Date) - new Date(a.Date))
-    .slice(0, 10)
-    .map((sale) => {
-      if (sale.Item_ID) {
-        const item = itemsMap[sale.Item_ID];
-        sale.Item_Name = item ? item.Name : CONFIG.DEFAULTS.ITEM_NAME;
-      }
-      return sale;
+    // Fallback: compute fresh
+    const sales = DataService.getAll(CONFIG.SHEETS.SALES, {
+      filters: { Status: CONFIG.DEFAULTS.SALE_STATUS },
     });
+    const items = InventoryService.getItems({ includeCategory: true });
 
-  const weekAgo = new Date();
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  const recentItems = items
-    .filter((i) => new Date(i.Date_Added) > weekAgo)
-    .sort((a, b) => new Date(b.Date_Added) - new Date(a.Date_Added))
-    .slice(0, 10);
+    // Build lookup map once instead of using .find() in a loop (eliminates N+1)
+    const itemsMap = Utils.buildLookupMap(items, 'Item_ID');
 
-  DashboardCacheService.setMetric("recent_sales", recentSales);
-  DashboardCacheService.setMetric("recent_items", recentItems);
+    const recentSales = sales
+      .sort((a, b) => new Date(b.Date) - new Date(a.Date))
+      .slice(0, 10)
+      .map((sale) => {
+        if (sale.Item_ID) {
+          const item = itemsMap[sale.Item_ID];
+          sale.Item_Name = item ? item.Name : CONFIG.DEFAULTS.ITEM_NAME;
+        }
+        return sale;
+      });
 
-  return {
-    recentSales,
-    recentItems,
-    fromCache: false,
-  };
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const recentItems = items
+      .filter((i) => new Date(i.Date_Added) > weekAgo)
+      .sort((a, b) => new Date(b.Date_Added) - new Date(a.Date_Added))
+      .slice(0, 10);
+
+    DashboardCacheService.setMetric("recent_sales", recentSales);
+    DashboardCacheService.setMetric("recent_items", recentItems);
+
+    return sanitizeForClient({
+      recentSales,
+      recentItems,
+      fromCache: false,
+    });
+  }, 'getRecentActivity');
 }
 
 /**
  * Force refresh the dashboard cache
  */
 function refreshDashboardCache() {
-  return DashboardCacheService.refreshAllMetrics();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(DashboardCacheService.refreshAllMetrics());
+  }, 'refreshDashboardCache');
 }
 
 /**
@@ -899,7 +997,7 @@ function installCacheTrigger() {
  * Get inventory items (paginated - efficient, reads only needed rows)
  */
 function getInventory(options = {}) {
-  try {
+  return Utils.wrapApiCall(() => {
     const { page = 1, pageSize = CONFIG.PERFORMANCE.PAGE_SIZE } = options;
 
     console.log("getInventory called with page:", page, "pageSize:", pageSize);
@@ -930,95 +1028,95 @@ function getInventory(options = {}) {
 
     // Sanitize Date objects for google.script.run serialization
     return sanitizeForClient(result);
-  } catch (error) {
-    console.error("Error in getInventory:", error);
-
-    // Fallback to old method
-    console.log("Falling back to getAll method");
-    const allItems = InventoryService.getItems({ includeCategory: true });
-    const page = options.page || 1;
-    const pageSize = options.pageSize || CONFIG.PERFORMANCE.PAGE_SIZE;
-    const start = (page - 1) * pageSize;
-    const items = allItems.slice(start, start + pageSize);
-
-    return sanitizeForClient({
-      items,
-      total: allItems.length,
-      page,
-      pageSize,
-      totalPages: Math.ceil(allItems.length / pageSize),
-    });
-  }
+  }, 'getInventory');
 }
 
 /**
  * Get single item details
  */
 function getItemDetails(itemId) {
-  return InventoryService.getItem(itemId);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(InventoryService.getItem(itemId));
+  }, 'getItemDetails');
 }
 
 /**
  * Create new item
  */
 function createItem(data) {
-  return InventoryService.createItem(data);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(InventoryService.createItem(data));
+  }, 'createItem');
 }
 
 /**
  * Update item
  */
 function updateItem(itemId, updates) {
-  return InventoryService.updateItem(itemId, updates);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(InventoryService.updateItem(itemId, updates));
+  }, 'updateItem');
 }
 
 /**
  * Delete item
  */
 function deleteItem(itemId) {
-  return InventoryService.deleteItem(itemId);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(InventoryService.deleteItem(itemId));
+  }, 'deleteItem');
 }
 
 /**
  * Search inventory
  */
 function searchInventory(query) {
-  return InventoryService.searchItems(query);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(InventoryService.searchItems(query));
+  }, 'searchInventory');
 }
 
 /**
  * Get categories tree
  */
 function getCategories() {
-  return TaxonomyService.getCategoryTree();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(TaxonomyService.getCategoryTree());
+  }, 'getCategories');
 }
 
 /**
  * Get flat categories list
  */
 function getCategoriesList() {
-  return TaxonomyService.getCategories();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(TaxonomyService.getCategories());
+  }, 'getCategoriesList');
 }
 
 /**
  * Get locations
  */
 function getLocations() {
-  return TaxonomyService.getLocations();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(TaxonomyService.getLocations());
+  }, 'getLocations');
 }
 
 /**
  * Get tags
  */
 function getTags() {
-  return TaxonomyService.getTags();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(TaxonomyService.getTags());
+  }, 'getTags');
 }
 
 /**
  * Get sales (paginated - efficient, reads only needed rows)
  */
 function getSales(options = {}) {
-  try {
+  return Utils.wrapApiCall(() => {
     const { page = 1, pageSize = CONFIG.PERFORMANCE.PAGE_SIZE } = options;
 
     console.log("getSales called with page:", page, "pageSize:", pageSize);
@@ -1057,105 +1155,112 @@ function getSales(options = {}) {
 
     // Sanitize Date objects for google.script.run serialization
     return sanitizeForClient(result);
-  } catch (error) {
-    console.error("Error in getSales:", error);
-
-    // Fallback to old method
-    console.log("Falling back to SalesService.getSales method");
-    const allSales = SalesService.getSales({ enrichItems: true });
-    const page = options.page || 1;
-    const pageSize = options.pageSize || CONFIG.PERFORMANCE.PAGE_SIZE;
-    const start = (page - 1) * pageSize;
-    const sales = allSales.slice(start, start + pageSize);
-
-    return sanitizeForClient({
-      sales,
-      total: allSales.length,
-      page,
-      pageSize,
-      totalPages: Math.ceil(allSales.length / pageSize),
-    });
-  }
+  }, 'getSales');
 }
 
 /**
  * Record new sale
  */
 function recordSale(data) {
-  return SalesService.recordSale(data);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(SalesService.recordSale(data));
+  }, 'recordSale');
 }
 
 /**
  * Get weekly sales
  */
 function getWeeklySales(weeks = 12) {
-  return SalesService.getWeeklySales({ weeks });
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(SalesService.getWeeklySales({ weeks }));
+  }, 'getWeeklySales');
 }
 
 /**
  * Get customers
  */
 function getCustomers() {
-  return SalesService.getCustomers();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(SalesService.getCustomers());
+  }, 'getCustomers');
 }
 
 /**
  * Create customer
  */
 function createCustomer(data) {
-  return SalesService.createCustomer(data);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(SalesService.createCustomer(data));
+  }, 'createCustomer');
 }
 
 /**
  * Get available items (for sale recording)
  */
 function getAvailableItems() {
-  return InventoryService.getItems({
-    filters: { Status: CONFIG.DEFAULTS.STATUS },
-  }).map((item) => ({
-    id: item.Item_ID,
-    name: item.Name,
-    price: item.Price,
-    quantity: item.Quantity,
-  }));
+  return Utils.wrapApiCall(() => {
+    const items = InventoryService.getItems({
+      filters: { Status: CONFIG.DEFAULTS.STATUS },
+    }).map((item) => ({
+      id: item.Item_ID,
+      name: item.Name,
+      price: item.Price,
+      quantity: item.Quantity,
+    }));
+    return sanitizeForClient(items);
+  }, 'getAvailableItems');
 }
 
 /**
  * Bulk operations
  */
 function bulkUpdateStatus(itemIds, status) {
-  return BulkOperations.bulkUpdateField(itemIds, "Status", status);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(BulkOperations.bulkUpdateField(itemIds, "Status", status));
+  }, 'bulkUpdateStatus');
 }
 
 function bulkMoveItems(itemIds, locationId) {
-  return BulkOperations.bulkMoveToLocation(itemIds, locationId);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(BulkOperations.bulkMoveToLocation(itemIds, locationId));
+  }, 'bulkMoveItems');
 }
 
 function bulkDeleteItems(itemIds) {
-  return BulkOperations.bulkDeleteItems(itemIds);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(BulkOperations.bulkDeleteItems(itemIds));
+  }, 'bulkDeleteItems');
 }
 
 function quickSale(itemIds, options) {
-  return BulkOperations.quickSaleItems(itemIds, options);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(BulkOperations.quickSaleItems(itemIds, options));
+  }, 'quickSale');
 }
 
 /**
  * Get bundles
  */
 function getBundles() {
-  return InventoryService.getBundles();
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(InventoryService.getBundles());
+  }, 'getBundles');
 }
 
 /**
  * Export inventory to CSV
  */
 function exportInventoryCSV(filters = {}) {
-  return BulkOperations.exportInventoryToCSV(filters);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(BulkOperations.exportInventoryToCSV(filters));
+  }, 'exportInventoryCSV');
 }
 
 /**
  * Import inventory from CSV
  */
 function importInventoryCSV(csvString) {
-  return BulkOperations.importInventoryFromCSV(csvString);
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(BulkOperations.importInventoryFromCSV(csvString));
+  }, 'importInventoryCSV');
 }

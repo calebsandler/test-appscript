@@ -20,6 +20,21 @@ const SalesService = (function () {
       throw new Error('Either Item_ID or Bundle_ID is required');
     }
 
+    // Validate foreign keys
+    if (saleData.Item_ID) {
+      const item = DataService.getById(CONFIG.SHEETS.INVENTORY, saleData.Item_ID);
+      if (!item) {
+        throw new Error(`Invalid Item_ID: ${saleData.Item_ID}`);
+      }
+    }
+
+    if (saleData.Customer_ID) {
+      const customer = DataService.getById(CONFIG.SHEETS.CUSTOMERS, saleData.Customer_ID);
+      if (!customer) {
+        throw new Error(`Invalid Customer_ID: ${saleData.Customer_ID}`);
+      }
+    }
+
     // Validate date
     const date = Utils.validateDate(saleData.Date || new Date(), 'Sale Date');
     const weekId = DataService.getWeekId(date);
@@ -264,43 +279,40 @@ const SalesService = (function () {
   // ─────────────────────────────────────────────────────────────────────────
 
   /**
-   * Update weekly sales summary for a specific week
+   * Fetch completed sales for a specific week
+   * @param {string} weekId - Week ID in YYYY-WW format
+   * @returns {Array} Array of completed sales for the week
    */
-  function updateWeeklySales(weekId) {
-    const sales = DataService.getAll(CONFIG.SHEETS.SALES, {
+  function fetchWeekSales(weekId) {
+    return DataService.getAll(CONFIG.SHEETS.SALES, {
       filters: { Week_ID: weekId, Status: "Completed" },
     });
+  }
 
-    if (sales.length === 0) {
-      // Remove week entry if no sales
-      const existing = DataService.getAll(CONFIG.SHEETS.WEEKLY_SALES, {
-        filters: { Week_ID: weekId },
-      });
-      if (existing.length > 0) {
-        const sheet = DataService.getSheet(CONFIG.SHEETS.WEEKLY_SALES);
-        sheet.deleteRow(existing[0]._rowIndex);
-        DataService.invalidateCache(CONFIG.SHEETS.WEEKLY_SALES.name);
-      }
-      return;
+  /**
+   * Calculate weekly metrics from sales data
+   * @param {Array} sales - Array of sales records
+   * @param {Object} itemsMap - Optional pre-built item lookup map
+   * @returns {Object} Calculated metrics including revenue, cost, items sold, etc.
+   */
+  function calculateWeeklyMetrics(sales, itemsMap = null) {
+    // Build item lookup map if not provided
+    if (!itemsMap) {
+      const itemIds = [...new Set(sales.map(s => s.Item_ID).filter(Boolean))];
+      itemsMap = itemIds.length > 0 ? DataService.getByIds(CONFIG.SHEETS.INVENTORY, itemIds) : {};
     }
 
-    // Calculate aggregations
-    const weekDates = DataService.getWeekDates(weekId);
     let totalRevenue = 0;
     let totalCost = 0;
     let itemsSold = 0;
     const categoryCounts = {};
     const itemCounts = {};
 
-    // Pre-build item lookup map to avoid N+1 queries
-    const itemIds = [...new Set(sales.map(s => s.Item_ID).filter(Boolean))];
-    const itemsMap = itemIds.length > 0 ? DataService.getByIds(CONFIG.SHEETS.INVENTORY, itemIds) : {};
-
     sales.forEach((sale) => {
       totalRevenue += sale.Total || 0;
       itemsSold += sale.Quantity || 0;
 
-      // Get item cost
+      // Get item cost and track category/item counts
       if (sale.Item_ID) {
         const item = itemsMap[sale.Item_ID];
         if (item) {
@@ -313,12 +325,31 @@ const SalesService = (function () {
           // Track item counts
           itemCounts[sale.Item_ID] = {
             name: item.Name,
-            count:
-              (itemCounts[sale.Item_ID]?.count || 0) + (sale.Quantity || 1),
+            count: (itemCounts[sale.Item_ID]?.count || 0) + (sale.Quantity || 1),
           };
         }
       }
     });
+
+    return {
+      totalRevenue,
+      totalCost,
+      grossProfit: totalRevenue - totalCost,
+      itemsSold,
+      transactions: sales.length,
+      avgTransaction: sales.length > 0 ? totalRevenue / sales.length : 0,
+      categoryCounts,
+      itemCounts,
+    };
+  }
+
+  /**
+   * Find top performing category and item from metrics
+   * @param {Object} metrics - Metrics object from calculateWeeklyMetrics
+   * @returns {Object} Top category and top item names
+   */
+  function findTopPerformers(metrics) {
+    const { categoryCounts, itemCounts } = metrics;
 
     // Find top category
     const topCategoryId =
@@ -332,18 +363,30 @@ const SalesService = (function () {
     )[0];
     const topItem = topItemEntry ? topItemEntry[1].name : "";
 
+    return { topCategory, topItem };
+  }
+
+  /**
+   * Upsert weekly summary to sheet (insert or update)
+   * @param {string} weekId - Week ID in YYYY-WW format
+   * @param {Object} metrics - Metrics from calculateWeeklyMetrics
+   * @param {Object} topPerformers - Top performers from findTopPerformers
+   */
+  function upsertWeeklySummary(weekId, metrics, topPerformers) {
+    const weekDates = DataService.getWeekDates(weekId);
+
     const summaryData = {
       Week_ID: weekId,
       Week_Start: weekDates.start,
       Week_End: weekDates.end,
-      Total_Revenue: totalRevenue,
-      Total_Cost: totalCost,
-      Gross_Profit: totalRevenue - totalCost,
-      Items_Sold: itemsSold,
-      Transactions: sales.length,
-      Avg_Transaction: sales.length > 0 ? totalRevenue / sales.length : 0,
-      Top_Category: topCategory,
-      Top_Item: topItem,
+      Total_Revenue: metrics.totalRevenue,
+      Total_Cost: metrics.totalCost,
+      Gross_Profit: metrics.grossProfit,
+      Items_Sold: metrics.itemsSold,
+      Transactions: metrics.transactions,
+      Avg_Transaction: metrics.avgTransaction,
+      Top_Category: topPerformers.topCategory,
+      Top_Item: topPerformers.topItem,
     };
 
     // Update or insert
@@ -366,11 +409,85 @@ const SalesService = (function () {
   }
 
   /**
+   * Remove weekly summary entry for a week with no sales
+   * @param {string} weekId - Week ID in YYYY-WW format
+   */
+  function removeWeeklySummary(weekId) {
+    const existing = DataService.getAll(CONFIG.SHEETS.WEEKLY_SALES, {
+      filters: { Week_ID: weekId },
+    });
+    if (existing.length > 0) {
+      const sheet = DataService.getSheet(CONFIG.SHEETS.WEEKLY_SALES);
+      sheet.deleteRow(existing[0]._rowIndex);
+      DataService.invalidateCache(CONFIG.SHEETS.WEEKLY_SALES.name);
+    }
+  }
+
+  /**
+   * Update weekly sales summary for a specific week
+   * Maintains the same external API while using decomposed helper functions
+   */
+  function updateWeeklySales(weekId) {
+    const sales = fetchWeekSales(weekId);
+
+    if (sales.length === 0) {
+      removeWeeklySummary(weekId);
+      return;
+    }
+
+    const metrics = calculateWeeklyMetrics(sales);
+    const topPerformers = findTopPerformers(metrics);
+    upsertWeeklySummary(weekId, metrics, topPerformers);
+  }
+
+  /**
+   * Update weekly sales from pre-loaded sales data (avoids N+1)
+   * @param {string} weekId - Week ID in YYYY-WW format
+   * @param {Array} sales - Pre-loaded sales for this week
+   * @param {Object} itemsMap - Pre-built item lookup map
+   */
+  function updateWeeklySalesFromData(weekId, sales, itemsMap) {
+    if (!sales || sales.length === 0) {
+      removeWeeklySummary(weekId);
+      return;
+    }
+
+    const metrics = calculateWeeklyMetrics(sales, itemsMap);
+    const topPerformers = findTopPerformers(metrics);
+    upsertWeeklySummary(weekId, metrics, topPerformers);
+  }
+
+  /**
+   * Group sales by week ID
+   * @param {Array} sales - Array of sales records
+   * @returns {Object} Sales grouped by Week_ID
+   */
+  function groupSalesByWeek(sales) {
+    const salesByWeek = {};
+    sales.forEach((sale) => {
+      if (sale.Week_ID) {
+        if (!salesByWeek[sale.Week_ID]) {
+          salesByWeek[sale.Week_ID] = [];
+        }
+        salesByWeek[sale.Week_ID].push(sale);
+      }
+    });
+    return salesByWeek;
+  }
+
+  /**
    * Rebuild all weekly sales summaries
+   * Optimized to load all sales once and group by week in memory
    */
   function rebuildAllWeeklySales() {
-    const sales = DataService.getAll(CONFIG.SHEETS.SALES);
-    const weeks = [...new Set(sales.map((s) => s.Week_ID))].filter(Boolean);
+    // Load all completed sales once (single query)
+    const allSales = DataService.getAll(CONFIG.SHEETS.SALES, {
+      filters: { Status: "Completed" },
+    });
+
+    // Group sales by week in memory
+    const salesByWeek = groupSalesByWeek(allSales);
+    const weekIds = Object.keys(salesByWeek);
 
     // Clear existing summaries
     const sheet = DataService.getSheet(CONFIG.SHEETS.WEEKLY_SALES);
@@ -380,10 +497,18 @@ const SalesService = (function () {
     }
     DataService.invalidateCache(CONFIG.SHEETS.WEEKLY_SALES.name);
 
-    // Rebuild each week
-    weeks.forEach((weekId) => updateWeeklySales(weekId));
+    // Pre-build item lookup map for all items across all sales (single query)
+    const allItemIds = [...new Set(allSales.map(s => s.Item_ID).filter(Boolean))];
+    const itemsMap = allItemIds.length > 0
+      ? DataService.getByIds(CONFIG.SHEETS.INVENTORY, allItemIds)
+      : {};
 
-    return weeks.length;
+    // Process each week using pre-loaded data
+    weekIds.forEach((weekId) => {
+      updateWeeklySalesFromData(weekId, salesByWeek[weekId], itemsMap);
+    });
+
+    return weekIds.length;
   }
 
   /**

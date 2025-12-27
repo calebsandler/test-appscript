@@ -296,23 +296,19 @@ const DashboardCacheService = (function () {
     _metricsCache = null;
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // REFRESH METRICS HELPER FUNCTIONS
+  // ─────────────────────────────────────────────────────────────────────────
+
   /**
-   * Refresh all dashboard cache metrics (optimized with batch writes)
-   * This is the expensive operation - should run in background
+   * Compute inventory metrics from items data
+   * @param {Array} items - Array of inventory items
+   * @returns {Object} Inventory stats with totalItems, availableCount, totalValue
    */
-  function refreshAllMetrics() {
-    const startTime = Date.now();
-
-    // Get all data once
-    const items = InventoryService.getItems({ includeCategory: true });
-    const sales = DataService.getAll(CONFIG.SHEETS.SALES, {
-      filters: { Status: "Completed" },
-    });
-    const categories = TaxonomyService.getCategoriesMap();
-
-    // Calculate inventory stats
+  function computeInventoryMetrics(items) {
     let totalValue = 0;
     let availableCount = 0;
+
     items.forEach((item) => {
       if (item.Status === "Available") {
         availableCount++;
@@ -320,20 +316,38 @@ const DashboardCacheService = (function () {
       }
     });
 
-    // Calculate health score
-    const healthData = InventoryAnalyticsService.calculateHealthScore();
+    return {
+      totalItems: items.length,
+      availableCount: availableCount,
+      totalValue: totalValue,
+    };
+  }
 
-    // Calculate today's summary
-    const todaySummary = SalesService.getTodaySummary();
+  /**
+   * Compute health metrics using InventoryAnalyticsService
+   * @returns {Object} Health data including score, turnover rate, etc.
+   */
+  function computeHealthMetrics() {
+    return InventoryAnalyticsService.calculateHealthScore();
+  }
 
-    // Get action items
-    const actionItems = InventoryAnalyticsService.getActionItems();
+  /**
+   * Compute today's summary metrics
+   * @returns {Object} Today's summary with revenue, items sold, margin, comparison
+   */
+  function computeTodayMetrics() {
+    return SalesService.getTodaySummary();
+  }
 
-    // Get chart data
+  /**
+   * Compute chart data - category performance and weekly revenue
+   * @returns {Object} Chart data with categoryPerformance and weeklyRevenue
+   */
+  function computeChartData() {
     const categoryPerformance = SalesService.getCategoryPerformance();
     const weeklyRevenue = SalesService.getWeeklyRevenue(12);
 
-    // Get weekly revenue total
+    // Get weekly revenue total for current week
     const currentWeekId = DataService.getWeekId(new Date());
     const weeklySales = DataService.getAll(CONFIG.SHEETS.WEEKLY_SALES, {
       filters: { Week_ID: currentWeekId },
@@ -341,8 +355,24 @@ const DashboardCacheService = (function () {
     const weeklyRev =
       weeklySales.length > 0 ? weeklySales[0].Total_Revenue || 0 : 0;
 
-    // Get recent sales (optimized - build lookup map to avoid N+1)
+    return {
+      categoryPerformance: categoryPerformance,
+      weeklyRevenue: weeklyRevenue,
+      currentWeekRevenue: weeklyRev,
+    };
+  }
+
+  /**
+   * Compute recent activity - recent items and sales
+   * @param {Array} items - Array of inventory items
+   * @param {Array} sales - Array of sales records
+   * @returns {Object} Recent activity with recentSales and recentItems
+   */
+  function computeRecentActivity(items, sales) {
+    // Build lookup map for items (optimized - avoids N+1)
     const itemsMap = Utils.buildLookupMap(items, "Item_ID");
+
+    // Get recent sales with item names
     const recentSales = sales
       .sort((a, b) => new Date(b.Date) - new Date(a.Date))
       .slice(0, 10)
@@ -354,7 +384,7 @@ const DashboardCacheService = (function () {
         return sale;
       });
 
-    // Get recent items
+    // Get recent items added in the last week
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const recentItems = items
@@ -362,26 +392,60 @@ const DashboardCacheService = (function () {
       .sort((a, b) => new Date(b.Date_Added) - new Date(a.Date_Added))
       .slice(0, 10);
 
+    return {
+      recentSales: recentSales,
+      recentItems: recentItems,
+    };
+  }
+
+  /**
+   * Refresh all dashboard cache metrics (optimized with batch writes)
+   * Orchestrates the smaller compute functions and batches all writes.
+   * This is the expensive operation - should run in background
+   */
+  function refreshAllMetrics() {
+    const startTime = Date.now();
+
+    // Get all data once
+    const items = InventoryService.getItems({ includeCategory: true });
+    const sales = DataService.getAll(CONFIG.SHEETS.SALES, {
+      filters: { Status: "Completed" },
+    });
+
+    // Compute all metrics using helper functions
+    const inventoryMetrics = computeInventoryMetrics(items);
+    const healthData = computeHealthMetrics();
+    const todaySummary = computeTodayMetrics();
+    const actionItems = InventoryAnalyticsService.getActionItems();
+    const chartData = computeChartData();
+    const recentActivity = computeRecentActivity(items, sales);
+
     // OPTIMIZED: Single batch write instead of 20 individual writes
     batchSetMetrics([
-      { key: "inventory_total_items", value: items.length, category: "quick_stats" },
-      { key: "inventory_available_count", value: availableCount, category: "quick_stats" },
-      { key: "inventory_total_value", value: totalValue, category: "quick_stats" },
+      // Inventory metrics
+      { key: "inventory_total_items", value: inventoryMetrics.totalItems, category: "quick_stats" },
+      { key: "inventory_available_count", value: inventoryMetrics.availableCount, category: "quick_stats" },
+      { key: "inventory_total_value", value: inventoryMetrics.totalValue, category: "quick_stats" },
+      // Health metrics
       { key: "health_score", value: healthData.score, category: "health" },
       { key: "health_turnover_rate", value: healthData.turnoverRate, category: "health" },
       { key: "health_aging_count", value: healthData.agingItemCount, category: "health" },
       { key: "health_blended_margin", value: healthData.blendedMargin, category: "health" },
       { key: "health_avg_velocity", value: healthData.averageVelocity, category: "health" },
+      // Today's summary
       { key: "today_revenue", value: todaySummary.revenue, category: "today" },
       { key: "today_items_sold", value: todaySummary.itemsSold, category: "today" },
       { key: "today_avg_margin", value: todaySummary.avgMargin, category: "today" },
       { key: "today_vs_last_week", value: todaySummary.vsLastWeek, category: "today" },
+      // Action items
       { key: "action_items", value: actionItems, category: "actions" },
-      { key: "category_performance", value: categoryPerformance, category: "charts" },
-      { key: "weekly_revenue", value: weeklyRevenue, category: "charts" },
-      { key: "sales_weekly_revenue", value: weeklyRev, category: "quick_stats" },
-      { key: "recent_sales", value: recentSales, category: "recent" },
-      { key: "recent_items", value: recentItems, category: "recent" },
+      // Chart data
+      { key: "category_performance", value: chartData.categoryPerformance, category: "charts" },
+      { key: "weekly_revenue", value: chartData.weeklyRevenue, category: "charts" },
+      { key: "sales_weekly_revenue", value: chartData.currentWeekRevenue, category: "quick_stats" },
+      // Recent activity
+      { key: "recent_sales", value: recentActivity.recentSales, category: "recent" },
+      { key: "recent_items", value: recentActivity.recentItems, category: "recent" },
     ]);
 
     const duration = Date.now() - startTime;
@@ -426,5 +490,11 @@ const DashboardCacheService = (function () {
     needsRefresh,
     clearCache,
     METRIC_CONFIG,
+    // Compute helper functions (exposed for testing/direct use)
+    computeInventoryMetrics,
+    computeHealthMetrics,
+    computeTodayMetrics,
+    computeChartData,
+    computeRecentActivity,
   };
 })();
