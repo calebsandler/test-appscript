@@ -3,6 +3,7 @@
   <head>
     <base target="_top" />
     <meta charset="UTF-8" />
+    <?!= include('SharedStyles'); ?>
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap"
       rel="stylesheet"
@@ -10,54 +11,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-      :root {
-        /* Google-like colors */
-        --white: #ffffff;
-        --gray-50: #f8f9fa;
-        --gray-100: #f1f3f4;
-        --gray-200: #e8eaed;
-        --gray-300: #dadce0;
-        --gray-500: #9aa0a6;
-        --gray-700: #5f6368;
-        --gray-900: #202124;
-
-        /* Primary */
-        --primary: #1a73e8;
-        --primary-dark: #1557b0;
-        --primary-light: #e8f0fe;
-
-        /* Status */
-        --success: #34a853;
-        --error: #ea4335;
-        --warning: #fbbc04;
-
-        /* Typography */
-        --font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
-
-        /* Spacing */
-        --space-xs: 4px;
-        --space-sm: 8px;
-        --space-md: 12px;
-        --space-lg: 16px;
-        --space-xl: 24px;
-
-        /* Border radius */
-        --radius-sm: 4px;
-        --radius-md: 8px;
-        --radius-full: 20px;
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
+      /* Sidebar-specific body styles */
       body {
-        font-family: var(--font-family);
         font-size: 13px;
-        background: var(--white);
-        color: var(--gray-900);
         min-height: 100vh;
         overflow: hidden;
       }
@@ -222,24 +178,6 @@
       }
       .panel.active {
         display: block;
-      }
-
-      /* Cards */
-      .card {
-        background: var(--white);
-        border: 1px solid var(--gray-200);
-        border-radius: var(--radius-md);
-        padding: var(--space-md);
-        margin-bottom: var(--space-md);
-      }
-
-      .card-title {
-        font-size: 11px;
-        font-weight: 500;
-        color: var(--gray-700);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: var(--space-sm);
       }
 
       /* Health Score Card */
@@ -569,34 +507,6 @@
         font-weight: 500;
       }
 
-      .status-badge {
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: var(--radius-full);
-        font-weight: 500;
-      }
-
-      .status-badge.available {
-        background: #e6f4ea;
-        color: var(--success);
-      }
-      .status-badge.sold {
-        background: var(--gray-100);
-        color: var(--gray-700);
-      }
-      .status-badge.reserved {
-        background: #fef7e0;
-        color: #e37400;
-      }
-      .status-badge.completed {
-        background: #e6f4ea;
-        color: var(--success);
-      }
-      .status-badge.pending {
-        background: #fef7e0;
-        color: #e37400;
-      }
-
       .item-details {
         display: flex;
         justify-content: space-between;
@@ -704,122 +614,6 @@
         border-color: var(--primary);
       }
 
-      /* Forms */
-      .form-group {
-        margin-bottom: var(--space-md);
-      }
-
-      .form-label {
-        display: block;
-        font-size: 11px;
-        font-weight: 500;
-        color: var(--gray-700);
-        margin-bottom: var(--space-xs);
-      }
-
-      .form-input {
-        width: 100%;
-        padding: var(--space-sm) var(--space-md);
-        font-size: 13px;
-        font-family: var(--font-family);
-        background: var(--white);
-        border: 1px solid var(--gray-300);
-        border-radius: var(--radius-sm);
-        color: var(--gray-900);
-        transition: border-color 0.2s, box-shadow 0.2s;
-      }
-
-      .form-input:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px var(--primary-light);
-      }
-
-      select.form-input {
-        cursor: pointer;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235f6368' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        padding-right: 32px;
-      }
-
-      textarea.form-input {
-        min-height: 60px;
-        resize: vertical;
-      }
-
-      .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-sm);
-      }
-
-      .form-grid .full-width {
-        grid-column: 1 / -1;
-      }
-
-      .price-input-group {
-        position: relative;
-      }
-
-      .price-input-group::before {
-        content: "$";
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--gray-500);
-        font-size: 13px;
-      }
-
-      .price-input-group .form-input {
-        padding-left: 24px;
-      }
-
-      /* Buttons */
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space-xs);
-        padding: var(--space-sm) var(--space-lg);
-        font-family: var(--font-family);
-        font-size: 13px;
-        font-weight: 500;
-        border-radius: var(--radius-sm);
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-      }
-
-      .btn-primary {
-        background: var(--primary);
-        color: var(--white);
-        width: 100%;
-      }
-
-      .btn-primary:hover {
-        background: var(--primary-dark);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-      }
-
-      .btn-secondary {
-        background: var(--white);
-        color: var(--primary);
-        border: 1px solid var(--gray-300);
-      }
-
-      .btn-secondary:hover {
-        background: var(--gray-50);
-        border-color: var(--primary);
-      }
-
-      .btn-sm {
-        padding: var(--space-xs) var(--space-sm);
-        font-size: 11px;
-      }
-
       /* Tools Grid */
       .tools-grid {
         display: grid;
@@ -895,110 +689,6 @@
       .pagination-info {
         font-size: 12px;
         color: var(--gray-500);
-      }
-
-      /* Toast */
-      .toast {
-        position: fixed;
-        bottom: 16px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--gray-900);
-        color: var(--white);
-        border-radius: var(--radius-sm);
-        padding: var(--space-sm) var(--space-lg);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        display: flex;
-        align-items: center;
-        gap: var(--space-sm);
-        font-size: 13px;
-        animation: slideUp 0.3s ease;
-        z-index: 1001;
-      }
-
-      .toast.success {
-        background: var(--success);
-      }
-      .toast.error {
-        background: var(--error);
-      }
-      .toast.warning {
-        background: var(--warning);
-        color: var(--gray-900);
-      }
-
-      @keyframes slideUp {
-        from {
-          transform: translate(-50%, 100%);
-          opacity: 0;
-        }
-        to {
-          transform: translate(-50%, 0);
-          opacity: 1;
-        }
-      }
-
-      /* Loading */
-      .loading-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(255, 255, 255, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 999;
-      }
-
-      .loading-spinner {
-        width: 32px;
-        height: 32px;
-        border: 3px solid var(--gray-200);
-        border-top-color: var(--primary);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      .hidden {
-        display: none !important;
-      }
-
-      /* Empty state */
-      .empty-state {
-        text-align: center;
-        padding: var(--space-xl) var(--space-lg);
-        color: var(--gray-500);
-      }
-
-      .empty-state-icon {
-        font-size: 32px;
-        margin-bottom: var(--space-sm);
-        opacity: 0.5;
-      }
-
-      .empty-state-text {
-        font-size: 13px;
-        font-style: italic;
-      }
-
-      /* Scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: var(--white);
-      }
-      ::-webkit-scrollbar-thumb {
-        background: var(--gray-300);
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: var(--gray-500);
       }
 
       /* Skeleton Loaders */
@@ -2733,22 +2423,7 @@
         }, 3000);
       }
 
-      // ============================================================================
-      // UTILITY FUNCTIONS
-      // ============================================================================
-
-      function formatNumber(num) {
-        return parseFloat(num || 0).toLocaleString("en-US", {
-          minimumFractionDigits: 0,
-          maximumFractionDigits: 2,
-        });
-      }
-
-      function escapeHtml(text) {
-        var div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
-      }
     </script>
+    <?!= include('SharedScripts'); ?>
   </body>
 </html>

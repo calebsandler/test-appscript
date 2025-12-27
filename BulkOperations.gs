@@ -173,9 +173,12 @@ const BulkOperations = (function() {
       processedIds: [] // Track for rollback
     };
 
+    // Batch fetch all items at once to eliminate N+1 queries
+    const itemsMap = DataService.getByIds(CONFIG.SHEETS.INVENTORY, itemIds);
+
     // Sort by row index descending for safe deletion
     const items = itemIds.map(id => {
-      const item = DataService.getById(CONFIG.SHEETS.INVENTORY, id);
+      const item = itemsMap[id];
       return item ? { id, rowIndex: item._rowIndex } : null;
     }).filter(Boolean);
 
@@ -234,9 +237,16 @@ const BulkOperations = (function() {
       processedIds: [] // Track for rollback
     };
 
-    itemIds.forEach((id, index) => {
+    // Batch fetch all items at once to eliminate N+1 queries
+    const itemsMap = DataService.getByIds(CONFIG.SHEETS.INVENTORY, itemIds);
+
+    // Prepare all updates upfront
+    const updates = [];
+    const updateDetails = []; // Track details for success reporting
+
+    itemIds.forEach((id) => {
       try {
-        const item = DataService.getById(CONFIG.SHEETS.INVENTORY, id);
+        const item = itemsMap[id];
         if (!item) throw new Error('Item not found');
 
         let newPrice;
@@ -247,22 +257,52 @@ const BulkOperations = (function() {
         }
         newPrice = Math.max(0, Math.round(newPrice * 100) / 100); // Round to 2 decimals
 
-        DataService.update(CONFIG.SHEETS.INVENTORY, id, { Price: newPrice });
-        results.success.push({ id, oldPrice: item.Price, newPrice });
-        results.processedIds.push(id);
+        updates.push({ id, changes: { Price: newPrice } });
+        updateDetails.push({ id, oldPrice: item.Price, newPrice });
       } catch (e) {
-        // Log partial success if error occurs mid-batch
-        if (results.processedIds.length > 0) {
-          console.warn(`Bulk price adjust failed at item ${index + 1}/${itemIds.length}. Successfully processed ${results.processedIds.length} items.`);
-        }
         results.errors.push({
           id,
           error: e.message,
-          partialSuccess: results.processedIds.length > 0,
-          successfulIds: results.processedIds
+          partialSuccess: false,
+          successfulIds: []
         });
       }
     });
+
+    // Perform batch update for all valid items
+    if (updates.length > 0) {
+      try {
+        const batchResults = DataService.batchUpdate(CONFIG.SHEETS.INVENTORY, updates);
+
+        batchResults.forEach((result, index) => {
+          if (result.success) {
+            const detail = updateDetails[index];
+            results.success.push(detail);
+            results.processedIds.push(detail.id);
+          } else {
+            results.errors.push({
+              id: result.id,
+              error: result.error,
+              partialSuccess: results.processedIds.length > 0,
+              successfulIds: [...results.processedIds]
+            });
+          }
+        });
+      } catch (e) {
+        // If batch update fails entirely, log all items as errors
+        if (results.processedIds.length > 0) {
+          console.warn(`Bulk price adjust batch failed. Successfully processed ${results.processedIds.length} items before error.`);
+        }
+        updates.forEach(({ id }) => {
+          results.errors.push({
+            id,
+            error: e.message,
+            partialSuccess: results.processedIds.length > 0,
+            successfulIds: [...results.processedIds]
+          });
+        });
+      }
+    }
 
     return results;
   }

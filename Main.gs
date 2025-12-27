@@ -550,7 +550,8 @@ function onInstall(e) {
  * Show the main sidebar
  */
 function showSidebar() {
-  const html = HtmlService.createHtmlOutputFromFile("Sidebar")
+  const template = HtmlService.createTemplateFromFile("Sidebar");
+  const html = template.evaluate()
     .setTitle("Rosewood Manager")
     .setWidth(CONFIG.UI.SIDEBAR_WIDTH);
 
@@ -606,7 +607,8 @@ function showAddCustomerDialog() {
  * Show the Control Center modal (full viewport for enhanced operations)
  */
 function showControlCenter() {
-  const html = HtmlService.createHtmlOutputFromFile("ControlCenter")
+  const template = HtmlService.createTemplateFromFile("ControlCenter");
+  const html = template.evaluate()
     .setWidth(CONFIG.UI.CONTROL_CENTER_WIDTH)
     .setHeight(CONFIG.UI.CONTROL_CENTER_HEIGHT);
 

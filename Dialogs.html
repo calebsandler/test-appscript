@@ -3,154 +3,38 @@
 <head>
   <base target="_top">
   <meta charset="UTF-8">
+  <?!= include('SharedStyles'); ?>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    :root {
-      /* Google-like colors */
-      --white: #ffffff;
-      --gray-50: #f8f9fa;
-      --gray-100: #f1f3f4;
-      --gray-200: #e8eaed;
-      --gray-300: #dadce0;
-      --gray-500: #9aa0a6;
-      --gray-700: #5f6368;
-      --gray-900: #202124;
-
-      /* Primary */
-      --primary: #1a73e8;
-      --primary-dark: #1557b0;
-      --primary-light: #e8f0fe;
-
-      /* Status */
-      --success: #34a853;
-      --error: #ea4335;
-      --warning: #fbbc04;
-
-      /* Typography */
-      --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
-
-      /* Spacing */
-      --space-xs: 4px;
-      --space-sm: 8px;
-      --space-md: 12px;
-      --space-lg: 16px;
-      --space-xl: 24px;
-
-      /* Border radius */
-      --radius-sm: 4px;
-      --radius-md: 8px;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    /* Dialog-specific styles */
     body {
-      font-family: var(--font-family);
       font-size: 14px;
-      background: var(--white);
-      color: var(--gray-900);
       padding: var(--space-lg);
       line-height: 1.5;
     }
 
-    /* Forms */
+    /* Override form-grid gap for dialogs */
     .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
       gap: var(--space-md);
     }
 
-    .form-grid .full-width {
-      grid-column: 1 / -1;
-    }
-
-    .form-group {
-      margin-bottom: var(--space-md);
-    }
-
+    /* Override form-label font-size for dialogs */
     .form-label {
-      display: block;
       font-size: 12px;
-      font-weight: 500;
-      color: var(--gray-700);
-      margin-bottom: var(--space-xs);
     }
 
+    /* Override form-input font-size for dialogs */
     .form-input {
-      width: 100%;
-      padding: var(--space-sm) var(--space-md);
       font-size: 14px;
-      font-family: var(--font-family);
-      background: var(--white);
-      border: 1px solid var(--gray-300);
-      border-radius: var(--radius-sm);
-      color: var(--gray-900);
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px var(--primary-light);
-    }
-
-    .form-input::placeholder {
-      color: var(--gray-500);
-    }
-
-    select.form-input {
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235f6368' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 32px;
     }
 
     textarea.form-input {
       min-height: 72px;
-      resize: vertical;
     }
 
-    /* Buttons */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-sm);
-      padding: var(--space-sm) var(--space-lg);
-      font-family: var(--font-family);
+    /* Override price-input-group font-size for dialogs */
+    .price-input-group::before {
       font-size: 14px;
-      font-weight: 500;
-      border-radius: var(--radius-sm);
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: var(--white);
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .btn-secondary {
-      background: var(--white);
-      color: var(--primary);
-      border: 1px solid var(--gray-300);
-    }
-
-    .btn-secondary:hover {
-      background: var(--gray-50);
-      border-color: var(--primary);
     }
 
     .dialog-actions {
@@ -160,78 +44,6 @@
       margin-top: var(--space-lg);
       padding-top: var(--space-lg);
       border-top: 1px solid var(--gray-200);
-    }
-
-    /* Toast */
-    .toast {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--gray-900);
-      color: var(--white);
-      border-radius: var(--radius-sm);
-      padding: var(--space-md) var(--space-lg);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      font-size: 14px;
-      animation: slideUp 0.3s ease;
-      z-index: 1000;
-    }
-
-    .toast.success { background: var(--success); }
-    .toast.error { background: var(--error); }
-
-    @keyframes slideUp {
-      from { transform: translate(-50%, 100%); opacity: 0; }
-      to { transform: translate(-50%, 0); opacity: 1; }
-    }
-
-    /* Loading */
-    .loading-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(255,255,255,0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-    }
-
-    .loading-spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid var(--gray-200);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .hidden { display: none !important; }
-
-    /* Price input */
-    .price-input-group {
-      position: relative;
-    }
-
-    .price-input-group::before {
-      content: '$';
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--gray-500);
-      font-size: 14px;
-    }
-
-    .price-input-group .form-input {
-      padding-left: 24px;
     }
 
     /* Sale form enhancements */
@@ -601,8 +413,7 @@
     var DialogState = {
       availableItems: [],
       selectedItem: null,
-      originalPrice: 0,
-      isLoading: false
+      originalPrice: 0
     };
 
     // ============================================================================
@@ -699,16 +510,6 @@
           updateMarginPreview();
           break;
       }
-    }
-
-    // ============================================================================
-    // ERROR HANDLING
-    // ============================================================================
-    function handleError(error) {
-      hideLoading();
-      var message = error.message || error.toString() || 'An unexpected error occurred';
-      showToast(message, 'error');
-      console.error('Error:', error);
     }
 
     // ============================================================================
@@ -1001,44 +802,10 @@
     // ============================================================================
     // UI HELPERS
     // ============================================================================
-    function showLoading() {
-      DialogState.isLoading = true;
-      document.getElementById('loading').classList.remove('hidden');
-    }
-
-    function hideLoading() {
-      DialogState.isLoading = false;
-      document.getElementById('loading').classList.add('hidden');
-    }
-
-    function showToast(message, type) {
-      var existingToast = document.querySelector('.toast');
-      if (existingToast) existingToast.remove();
-
-      var toast = document.createElement('div');
-      toast.className = 'toast ' + (type || '');
-      toast.innerHTML = '<span>' + (type === 'success' ? '&#10003;' : '&#10007;') + '</span><span>' + escapeHtml(message) + '</span>';
-      document.body.appendChild(toast);
-
-      setTimeout(function() { toast.remove(); }, 3000);
-    }
-
     function closeDialog() {
       google.script.host.close();
     }
-
-    // ============================================================================
-    // UTILITY FUNCTIONS
-    // ============================================================================
-    function formatNumber(num) {
-      return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-    }
-
-    function escapeHtml(text) {
-      var div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
   </script>
+  <?!= include('SharedScripts'); ?>
 </body>
 </html>

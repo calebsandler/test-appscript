@@ -3,6 +3,7 @@
   <head>
     <base target="_top" />
     <meta charset="UTF-8" />
+    <?!= include('SharedStyles'); ?>
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Google+Sans:wght@400;500;700&display=swap"
       rel="stylesheet"
@@ -10,59 +11,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+      /* ControlCenter-specific CSS variables (extends SharedStyles) */
       :root {
-        /* Google-like colors */
-        --white: #ffffff;
-        --gray-50: #f8f9fa;
-        --gray-100: #f1f3f4;
-        --gray-200: #e8eaed;
-        --gray-300: #dadce0;
-        --gray-500: #9aa0a6;
-        --gray-700: #5f6368;
-        --gray-900: #202124;
-
-        /* Primary */
-        --primary: #1a73e8;
-        --primary-dark: #1557b0;
-        --primary-light: #e8f0fe;
-
-        /* Status */
-        --success: #34a853;
-        --error: #ea4335;
-        --warning: #fbbc04;
-
-        /* Typography */
-        --font-family: "Roboto", -apple-system, BlinkMacSystemFont, sans-serif;
-
-        /* Spacing */
-        --space-xs: 4px;
-        --space-sm: 8px;
-        --space-md: 12px;
-        --space-lg: 16px;
-        --space-xl: 24px;
         --space-2xl: 32px;
-
-        /* Border radius */
-        --radius-sm: 4px;
-        --radius-md: 8px;
         --radius-lg: 12px;
-        --radius-full: 20px;
-
-        /* Sidebar width */
         --sidebar-width: 200px;
       }
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
+      /* ControlCenter-specific body overrides */
       body {
-        font-family: var(--font-family);
         font-size: 13px;
         background: var(--gray-50);
-        color: var(--gray-900);
         height: 100vh;
         overflow: hidden;
       }
@@ -1046,10 +1005,6 @@
         }
       }
 
-      .hidden {
-        display: none !important;
-      }
-
       /* Toast */
       .cc-toast {
         position: fixed;
@@ -1850,6 +1805,7 @@
               select.appendChild(opt);
             });
           })
+          .withFailureHandler(handleError)
           .getCategoriesList();
 
         // Locations
@@ -1874,6 +1830,7 @@
               bulkSelect.appendChild(opt);
             });
           })
+          .withFailureHandler(handleError)
           .getLocations();
 
         // Config-based dropdowns
@@ -1885,6 +1842,7 @@
               State.config = config;
               populateConfigDropdowns();
             })
+            .withFailureHandler(handleError)
             .getConfig();
         }
 
@@ -1902,6 +1860,7 @@
               select.appendChild(opt);
             });
           })
+          .withFailureHandler(handleError)
           .getAvailableItems();
 
         // Customers
@@ -1916,6 +1875,7 @@
               select.appendChild(opt);
             });
           })
+          .withFailureHandler(handleError)
           .getCustomers();
       }
 
@@ -1971,6 +1931,7 @@
               select.appendChild(opt);
             });
           })
+          .withFailureHandler(handleError)
           .getLocations();
       }
 
@@ -2624,12 +2585,8 @@
       }
 
       // ============================================================================
-      // UTILITIES
+      // UTILITIES (formatNumber is provided by SharedScripts)
       // ============================================================================
-      function formatNumber(num) {
-        return parseFloat(num || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-      }
-
       function escapeHtml(text) {
         if (!text) return '';
         var div = document.createElement('div');
@@ -2664,5 +2621,6 @@
         console.error('Error:', error);
       }
     </script>
+    <?!= include('SharedScripts'); ?>
   </body>
 </html>
