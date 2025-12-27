@@ -2,19 +2,20 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * ROSEWOOD ANTIQUES v2 - Access Control Service
  * ═══════════════════════════════════════════════════════════════════════════
- * Handles user authentication, authorization, passphrase management, and
- * allowlist operations. Provides centralized access control for the application.
+ *
+ * Simple access control:
+ * 1. Admin (script owner) - always has access
+ * 2. @calebsandler.com domain - always has access
+ * 3. Everyone else - requires passphrase set by admin
  */
 
 const AccessControlService = (function() {
   // ─────────────────────────────────────────────────────────────────────────
-  // PRIVATE: Allowed Emails (legacy hardcoded list)
+  // PRIVATE: Configuration
   // ─────────────────────────────────────────────────────────────────────────
-  const ALLOWED_EMAILS = [
-    // Add emails here, e.g.:
-    // 'colleague@gmail.com',
-    // 'partner@company.com',
-  ];
+
+  // Allowed email domain (hardcoded for security)
+  const ALLOWED_DOMAIN = 'calebsandler.com';
 
   // ─────────────────────────────────────────────────────────────────────────
   // PRIVATE: Helper Functions
@@ -29,32 +30,40 @@ const AccessControlService = (function() {
   }
 
   /**
-   * Get the list of allowed users from Script Properties
-   * @returns {Array} Array of { email, isAdmin, addedBy, addedAt }
+   * Check if an email belongs to the allowed domain
+   * @param {string} email - Email to check
+   * @returns {boolean} True if email is from allowed domain
    */
-  function getAllowedUsersInternal() {
-    const props = PropertiesService.getScriptProperties();
-    const usersJson = props.getProperty('ALLOWED_USERS');
-
-    if (!usersJson) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(usersJson);
-    } catch (e) {
-      console.error('Error parsing allowed users:', e);
-      return [];
-    }
+  function isAllowedDomain(email) {
+    if (!email) return false;
+    return email.toLowerCase().endsWith('@' + ALLOWED_DOMAIN.toLowerCase());
   }
 
   /**
-   * Save the allowed users list to Script Properties
-   * @param {Array} users - Array of user objects
+   * Check if email is admin (owner) or from allowed domain
+   * @param {string} email - Email to check
+   * @returns {Object} { hasAccess: boolean, isAdmin: boolean, reason: string }
    */
-  function saveAllowedUsers(users) {
-    const props = PropertiesService.getScriptProperties();
-    props.setProperty('ALLOWED_USERS', JSON.stringify(users));
+  function checkEmailAccess(email) {
+    if (!email) {
+      return { hasAccess: false, isAdmin: false, reason: 'No email provided' };
+    }
+
+    const owner = getScriptOwner();
+    const emailLower = email.toLowerCase();
+
+    // Check if owner (admin)
+    if (emailLower === owner.toLowerCase()) {
+      return { hasAccess: true, isAdmin: true, reason: 'Script owner' };
+    }
+
+    // Check if from allowed domain
+    if (isAllowedDomain(email)) {
+      return { hasAccess: true, isAdmin: false, reason: 'Allowed domain' };
+    }
+
+    // External user - needs passphrase
+    return { hasAccess: false, isAdmin: false, reason: 'External user - passphrase required' };
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -78,7 +87,7 @@ const AccessControlService = (function() {
     for (let i = 0; i < combined.length; i++) {
       const char = combined.charCodeAt(i);
       hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
+      hash = hash & hash;
     }
 
     // Convert to readable passphrase using word list
@@ -98,34 +107,36 @@ const AccessControlService = (function() {
 
   /**
    * Get current user info - called from frontend to check access
-   * This triggers OAuth if user hasn't authorized yet
    * @returns {Object} User authorization status and details
    */
   function getCurrentUser() {
     const email = Session.getActiveUser().getEmail();
-    const owner = Session.getEffectiveUser().getEmail();
+    const owner = getScriptOwner();
 
-    // If email is empty, user needs to authorize
+    // If email is empty, user hasn't authorized with Google
+    // They can still access via passphrase
     if (!email) {
       return {
         authorized: false,
         email: null,
         isOwner: false,
+        isAllowedDomain: false,
         hasAccess: false,
-        message: 'Please authorize to continue'
+        requiresPassphrase: true,
+        message: 'External user - passphrase required'
       };
     }
 
-    const isOwner = email.toLowerCase() === owner.toLowerCase();
-    const isInAllowlist = ALLOWED_EMAILS.some(e => e.toLowerCase() === email.toLowerCase());
-    const hasAccess = isOwner || isInAllowlist;
+    const accessCheck = checkEmailAccess(email);
 
     return {
       authorized: true,
       email: email,
-      isOwner: isOwner,
-      hasAccess: hasAccess,
-      message: hasAccess ? 'Access granted' : 'Access denied - contact administrator'
+      isOwner: accessCheck.isAdmin,
+      isAllowedDomain: isAllowedDomain(email),
+      hasAccess: accessCheck.hasAccess,
+      requiresPassphrase: !accessCheck.hasAccess,
+      message: accessCheck.hasAccess ? 'Access granted' : 'Passphrase required'
     };
   }
 
@@ -136,22 +147,15 @@ const AccessControlService = (function() {
   function isOwner() {
     const active = Session.getActiveUser().getEmail();
     const effective = Session.getEffectiveUser().getEmail();
-    // In USER_DEPLOYING mode, effective user is always owner
-    // Active user may be empty for external users
     return active && active.toLowerCase() === effective.toLowerCase();
   }
 
   /**
-   * Triggers OAuth authorization flow
-   * Called from the sign-in page to force Google's consent screen
-   * @returns {Object} Email and URL info
+   * Get the script owner email
+   * @returns {string} Owner's email
    */
-  function triggerAuth() {
-    // This function triggers the OAuth flow when called via google.script.run
-    // Simply accessing the user email is enough to trigger auth
-    const email = Session.getActiveUser().getEmail();
-    const url = ScriptApp.getService().getUrl();
-    return { email: email, url: url };
+  function getOwnerEmail() {
+    return getScriptOwner();
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -160,179 +164,16 @@ const AccessControlService = (function() {
 
   /**
    * Check if a user has access to the web app
-   * @param {string} email - User's email address
-   * @returns {Object} { allowed: boolean, isAdmin: boolean }
+   * @param {string} email - User's email address (optional for passphrase users)
+   * @returns {Object} { allowed: boolean, isAdmin: boolean, requiresPassphrase: boolean }
    */
   function checkUserAccess(email) {
-    if (!email) {
-      return { allowed: false, isAdmin: false };
-    }
-
-    const owner = getScriptOwner();
-
-    // Owner always has access and is always admin
-    if (email.toLowerCase() === owner.toLowerCase()) {
-      return { allowed: true, isAdmin: true };
-    }
-
-    // Check allowlist
-    const users = getAllowedUsersInternal();
-    const userEntry = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (userEntry) {
-      return { allowed: true, isAdmin: userEntry.isAdmin || false };
-    }
-
-    return { allowed: false, isAdmin: false };
-  }
-
-  /**
-   * Get the list of allowed users
-   * @returns {Array} Array of { email, isAdmin, addedBy, addedAt }
-   */
-  function getAllowedUsers() {
-    return getAllowedUsersInternal();
-  }
-
-  /**
-   * Add a user to the allowlist (requires admin)
-   * @param {string} email - Email to add
-   * @param {boolean} isAdmin - Whether the new user should be an admin
-   * @returns {Object} Result with success status
-   */
-  function addAllowedUser(email, isAdmin = false) {
-    // Check if current user is admin
-    const currentUser = Session.getActiveUser().getEmail();
-    const accessCheck = checkUserAccess(currentUser);
-
-    if (!accessCheck.isAdmin) {
-      return { success: false, error: 'Only admins can add users' };
-    }
-
-    // Validate email
-    if (!email || !email.includes('@')) {
-      return { success: false, error: 'Invalid email address' };
-    }
-
-    email = email.toLowerCase().trim();
-
-    // Check if already exists
-    const users = getAllowedUsersInternal();
-    if (users.some(u => u.email.toLowerCase() === email)) {
-      return { success: false, error: 'User already has access' };
-    }
-
-    // Add user
-    users.push({
-      email: email,
-      isAdmin: isAdmin,
-      addedBy: currentUser,
-      addedAt: new Date().toISOString()
-    });
-
-    saveAllowedUsers(users);
-
-    return { success: true, message: `Added ${email} to allowed users` };
-  }
-
-  /**
-   * Remove a user from the allowlist (requires admin)
-   * @param {string} email - Email to remove
-   * @returns {Object} Result with success status
-   */
-  function removeAllowedUser(email) {
-    // Check if current user is admin
-    const currentUser = Session.getActiveUser().getEmail();
-    const accessCheck = checkUserAccess(currentUser);
-
-    if (!accessCheck.isAdmin) {
-      return { success: false, error: 'Only admins can remove users' };
-    }
-
-    // Can't remove the owner
-    const owner = getScriptOwner();
-    if (email.toLowerCase() === owner.toLowerCase()) {
-      return { success: false, error: 'Cannot remove the script owner' };
-    }
-
-    // Can't remove yourself
-    if (email.toLowerCase() === currentUser.toLowerCase()) {
-      return { success: false, error: 'Cannot remove yourself' };
-    }
-
-    const users = getAllowedUsersInternal();
-    const filteredUsers = users.filter(u => u.email.toLowerCase() !== email.toLowerCase());
-
-    if (filteredUsers.length === users.length) {
-      return { success: false, error: 'User not found in allowlist' };
-    }
-
-    saveAllowedUsers(filteredUsers);
-
-    return { success: true, message: `Removed ${email} from allowed users` };
-  }
-
-  /**
-   * Update a user's admin status (requires admin)
-   * @param {string} email - Email to update
-   * @param {boolean} isAdmin - New admin status
-   * @returns {Object} Result with success status
-   */
-  function updateUserAdmin(email, isAdmin) {
-    // Check if current user is admin
-    const currentUser = Session.getActiveUser().getEmail();
-    const accessCheck = checkUserAccess(currentUser);
-
-    if (!accessCheck.isAdmin) {
-      return { success: false, error: 'Only admins can update user permissions' };
-    }
-
-    // Can't modify the owner
-    const owner = getScriptOwner();
-    if (email.toLowerCase() === owner.toLowerCase()) {
-      return { success: false, error: 'Cannot modify the script owner permissions' };
-    }
-
-    const users = getAllowedUsersInternal();
-    const userIndex = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (userIndex === -1) {
-      return { success: false, error: 'User not found in allowlist' };
-    }
-
-    users[userIndex].isAdmin = isAdmin;
-    saveAllowedUsers(users);
-
-    return { success: true, message: `Updated ${email} admin status to ${isAdmin}` };
-  }
-
-  /**
-   * Get access info for the current user (called from frontend)
-   * @returns {Object} Current user info and access details
-   */
-  function getAccessInfo() {
-    const currentUser = Session.getActiveUser().getEmail();
-    const owner = getScriptOwner();
-    const accessCheck = checkUserAccess(currentUser);
-    const users = getAllowedUsersInternal();
-
-    // Add owner to the displayed list
-    const allUsers = [
-      {
-        email: owner,
-        isAdmin: true,
-        isOwner: true,
-        addedBy: 'System',
-        addedAt: null
-      },
-      ...users.map(u => ({ ...u, isOwner: false }))
-    ];
-
+    const accessCheck = checkEmailAccess(email);
     return {
-      currentUser: currentUser,
+      allowed: accessCheck.hasAccess,
       isAdmin: accessCheck.isAdmin,
-      isOwner: currentUser.toLowerCase() === owner.toLowerCase(),
-      users: allUsers
+      requiresPassphrase: !accessCheck.hasAccess,
+      reason: accessCheck.reason
     };
   }
 
@@ -341,7 +182,7 @@ const AccessControlService = (function() {
   // ─────────────────────────────────────────────────────────────────────────
 
   /**
-   * Verify a passphrase for access
+   * Verify a passphrase for access (for external users)
    * @param {string} input - The passphrase entered by user
    * @returns {Object} { valid: boolean, expiresAt: string }
    */
@@ -388,11 +229,11 @@ const AccessControlService = (function() {
    * @returns {Object} Current passphrase configuration
    */
   function getPassphraseSettings() {
-    // Check if caller is owner/admin
-    const email = Session.getEffectiveUser().getEmail();
-    const owner = Session.getEffectiveUser().getEmail();
+    // Only owner can view settings
+    if (!isOwner()) {
+      return { error: 'Admin access required' };
+    }
 
-    // For web app context, only owner can access settings
     const props = PropertiesService.getScriptProperties();
     const mode = props.getProperty('PASSPHRASE_MODE') || 'static';
     const expiryHours = props.getProperty('PASSPHRASE_EXPIRY_HOURS') || '24';
@@ -423,6 +264,11 @@ const AccessControlService = (function() {
    * @returns {Object} Result
    */
   function setPassphraseSettings(settings) {
+    // Only owner can modify settings
+    if (!isOwner()) {
+      return { success: false, error: 'Admin access required' };
+    }
+
     const props = PropertiesService.getScriptProperties();
 
     if (settings.mode) {
@@ -451,16 +297,10 @@ const AccessControlService = (function() {
     // User Authentication
     getCurrentUser: getCurrentUser,
     isOwner: isOwner,
-    triggerAuth: triggerAuth,
-    getScriptOwner: getScriptOwner,
+    getOwnerEmail: getOwnerEmail,
 
     // Access Control
     checkUserAccess: checkUserAccess,
-    getAllowedUsers: getAllowedUsers,
-    addAllowedUser: addAllowedUser,
-    removeAllowedUser: removeAllowedUser,
-    updateUserAdmin: updateUserAdmin,
-    getAccessInfo: getAccessInfo,
 
     // Passphrase Management
     verifyPassphrase: verifyPassphrase,

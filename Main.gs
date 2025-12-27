@@ -80,6 +80,43 @@ function setPassphraseSettings(settings) {
 }
 
 /**
+ * Get the deployed web app URL
+ * Tries Script Properties first (set via setWebAppUrl), falls back to ScriptApp
+ * @returns {string} The web app URL
+ */
+function getWebAppUrl() {
+  return Utils.wrapApiCall(() => {
+    // First try Script Properties (manually set after deployment)
+    const props = PropertiesService.getScriptProperties();
+    const storedUrl = props.getProperty('WEB_APP_URL');
+    if (storedUrl) {
+      return storedUrl;
+    }
+    // Fall back to ScriptApp (works for dev mode)
+    const serviceUrl = ScriptApp.getService().getUrl();
+    if (serviceUrl) {
+      return serviceUrl;
+    }
+    return null;
+  }, 'getWebAppUrl');
+}
+
+/**
+ * Set the web app URL (call after deployment)
+ * @param {string} url - The deployed web app URL
+ */
+function setWebAppUrl(url) {
+  return Utils.wrapApiCall(() => {
+    if (!AccessControlService.isOwner()) {
+      return { success: false, error: 'Admin access required' };
+    }
+    const props = PropertiesService.getScriptProperties();
+    props.setProperty('WEB_APP_URL', url);
+    return { success: true, message: 'Web app URL saved' };
+  }, 'setWebAppUrl');
+}
+
+/**
  * Check if current session is the script owner (for admin functions)
  */
 function isOwner() {
@@ -89,88 +126,23 @@ function isOwner() {
 }
 
 /**
- * Triggers OAuth authorization flow
- * Called from the sign-in page to force Google's consent screen
- */
-function triggerAuth() {
-  return Utils.wrapApiCall(() => {
-    return sanitizeForClient(AccessControlService.triggerAuth());
-  }, 'triggerAuth');
-}
-
-/**
  * Get the script owner's email (always has access and is always admin)
  */
-function getScriptOwner() {
+function getOwnerEmail() {
   return Utils.wrapApiCall(() => {
-    return AccessControlService.getScriptOwner();
-  }, 'getScriptOwner');
+    return AccessControlService.getOwnerEmail();
+  }, 'getOwnerEmail');
 }
 
 /**
  * Check if a user has access to the web app
  * @param {string} email - User's email address
- * @returns {Object} { allowed: boolean, isAdmin: boolean }
+ * @returns {Object} { allowed: boolean, isAdmin: boolean, requiresPassphrase: boolean }
  */
 function checkUserAccess(email) {
   return Utils.wrapApiCall(() => {
     return sanitizeForClient(AccessControlService.checkUserAccess(email));
   }, 'checkUserAccess');
-}
-
-/**
- * Get the list of allowed users from Script Properties
- * @returns {Array} Array of { email, isAdmin, addedBy, addedAt }
- */
-function getAllowedUsers() {
-  return Utils.wrapApiCall(() => {
-    return sanitizeForClient(AccessControlService.getAllowedUsers());
-  }, 'getAllowedUsers');
-}
-
-/**
- * Add a user to the allowlist (requires admin)
- * @param {string} email - Email to add
- * @param {boolean} isAdmin - Whether the new user should be an admin
- * @returns {Object} Result with success status
- */
-function addAllowedUser(email, isAdmin = false) {
-  return Utils.wrapApiCall(() => {
-    return sanitizeForClient(AccessControlService.addAllowedUser(email, isAdmin));
-  }, 'addAllowedUser');
-}
-
-/**
- * Remove a user from the allowlist (requires admin)
- * @param {string} email - Email to remove
- * @returns {Object} Result with success status
- */
-function removeAllowedUser(email) {
-  return Utils.wrapApiCall(() => {
-    return sanitizeForClient(AccessControlService.removeAllowedUser(email));
-  }, 'removeAllowedUser');
-}
-
-/**
- * Update a user's admin status (requires admin)
- * @param {string} email - Email to update
- * @param {boolean} isAdmin - New admin status
- * @returns {Object} Result with success status
- */
-function updateUserAdmin(email, isAdmin) {
-  return Utils.wrapApiCall(() => {
-    return sanitizeForClient(AccessControlService.updateUserAdmin(email, isAdmin));
-  }, 'updateUserAdmin');
-}
-
-/**
- * Get access info for the current user (called from frontend)
- * @returns {Object} Current user info and access details
- */
-function getAccessInfo() {
-  return Utils.wrapApiCall(() => {
-    return sanitizeForClient(AccessControlService.getAccessInfo());
-  }, 'getAccessInfo');
 }
 
 /**

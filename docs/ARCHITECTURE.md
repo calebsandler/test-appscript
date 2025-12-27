@@ -1,9 +1,10 @@
 # Rosewood Antiques v2 - Architecture Documentation
 
-> **Last Updated:** December 2024
-> **Version:** 2.0.0
+> **Last Updated:** December 2024 (Post-Refactoring)
+> **Version:** 2.1.0
 > **Runtime:** V8
 > **Timezone:** America/New_York
+> **Refactoring Status:** Complete (P0-P3)
 
 ## Overview
 
@@ -22,16 +23,34 @@ This is a **container-bound** Google Apps Script application for antique invento
 │                       │                      │                          │
 │  Dialogs.html         │  SharedStyles.html   │  SharedScripts.html      │
 │  (Add Item/Sale/Cust) │  (CSS Variables)     │  (JS Utilities)          │
+│                       │                      │                          │
+│  ✓ All use <?!= include('SharedStyles/Scripts') ?>                      │
+│  ✓ ARIA accessibility attributes on all navigation                      │
+│  ✓ Skeleton loaders for loading states                                  │
+│  ✓ Request cancellation to prevent race conditions                      │
 └─────────────────────────────────────────────────────────────────────────┘
                               │ google.script.run
+                              │ (all calls have .withFailureHandler)
                               ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           API LAYER (Main.gs)                           │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  • Web App Entry Points (doGet)                                         │
-│  • Access Control (passphrase, email whitelist)                         │
 │  • Menu Handlers                                                         │
-│  • Frontend API Functions (getInventory, recordSale, etc.)              │
+│  • UI Launchers (dialogs, sidebar)                                      │
+│  • Frontend API Functions (wrapped with Utils.wrapApiCall)              │
+│  • All responses use sanitizeForClient()                                │
+└─────────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       ACCESS CONTROL LAYER                              │
+├─────────────────────────────────────────────────────────────────────────┤
+│  AccessControlService.gs (NEW - extracted from Main.gs)                 │
+│  • Owner check (script owner always has access)                         │
+│  • Domain check (@calebsandler.com always allowed)                      │
+│  • Passphrase system (static or daily rotating)                         │
+│  • Session management with configurable expiry                          │
 └─────────────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -44,11 +63,14 @@ This is a **container-bound** Google Apps Script application for antique invento
 │ • updateItem     │ • updateWeekly   │ • updateStats    │ • getTags      │
 │ • deleteItem     │ • getDashboard   │                  │ • getCategoryTr│
 │ • addVariant     │ • cancelSale     │                  │                │
+│ ✓ FK validation  │ ✓ FK validation  │                  │                │
 ├──────────────────┴──────────────────┴──────────────────┴────────────────┤
 │ InventoryAnalyticsService  │  DashboardCacheService  │  BulkOperations  │
-│ • calculateHealthScore      │  • getMetric/setMetric  │  • bulkCreate   │ 
+│ • calculateHealthScore      │  • getMetric/setMetric  │  • bulkCreate   │
 │ • getAgingDistribution      │  • refreshAllMetrics    │  • bulkUpdate   │
-│ • getActionItems           │  • batchSetMetrics       │  • CSV import   │
+│ • getActionItems           │  • batchSetMetrics      │  • CSV import   │
+│                            │  ✓ Single setValues call │  ✓ Flush points │
+│                            │  ✓ TTLs in Config.gs    │  ✓ No N+1 queries│
 └─────────────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -60,12 +82,13 @@ This is a **container-bound** Google Apps Script application for antique invento
 │  • Batch operations (batchInsert, batchUpdate, batchDelete)             │
 │  • Caching layer (CacheService with TTL)                                │
 │  • Pagination support (getPaginated)                                    │
-│  • Activity logging                                                      │
+│  • Activity logging (✓ with buffering - flushes every 50 entries)       │
+│  • ✓ Lock scope fixed - chunked processing with lock/unlock cycles      │
 └─────────────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                      CONFIGURATION LAYER                                 │
+│                      CONFIGURATION & UTILITIES                          │
 ├─────────────────────────────────────────────────────────────────────────┤
 │  Config.gs                    │           Utils.gs                       │
 │  • Sheet definitions          │  • Validation functions                  │
@@ -73,6 +96,8 @@ This is a **container-bound** Google Apps Script application for antique invento
 │  • UI tokens                  │  • Formatting helpers                    │
 │  • Business rules             │  • Response builders                     │
 │  • Performance settings       │  • Lookup map builders                   │
+│  • ✓ Cache TTLs (moved here)  │  • ✓ wrapApiCall (standardized errors)  │
+│                               │  • ✓ Logger utility (debug/info/warn/err)│
 └─────────────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -91,33 +116,32 @@ This is a **container-bound** Google Apps Script application for antique invento
 
 ### Server-Side Files (.gs)
 
-| File | Size | Purpose |
-|------|------|---------|
-| `Main.gs` | 43.6 KB | Entry points, API functions, access control |
-| `SalesService.gs` | 29.2 KB | Sales transactions and analytics |
-| `TestDataGenerator.gs` | 26.4 KB | Test data generation with guards |
-| `BulkOperations.gs` | 25.8 KB | Batch operations, CSV import/export |
-| `DataService.gs` | 21.6 KB | Low-level data access with caching |
-| `InventoryService.gs` | 18.9 KB | Core inventory CRUD |
-| `DashboardCacheService.gs` | 14.9 KB | Pre-computed metrics caching |
-| `Utils.gs` | 13.7 KB | Shared utilities |
-| `Config.gs` | 12.9 KB | Central configuration |
-| `InventoryAnalyticsService.gs` | 10.9 KB | Health scoring and analytics |
-| `TaxonomyService.gs` | 9.6 KB | Categories, locations, tags |
-| `CustomerService.gs` | 4.8 KB | Customer management |
+| File | Purpose | Post-Refactoring Changes |
+|------|---------|--------------------------|
+| `Main.gs` | Entry points, API functions | Reduced size, uses wrapApiCall, sanitizeForClient |
+| `AccessControlService.gs` | **NEW** - Access control | Extracted from Main.gs, handles owner/domain/passphrase |
+| `SalesService.gs` | Sales transactions and analytics | updateWeeklySales decomposed, FK validation |
+| `BulkOperations.gs` | Batch operations, CSV import/export | Fixed N+1 queries, added flush points |
+| `DataService.gs` | Low-level data access with caching | Activity log buffering, fixed lock scope |
+| `InventoryService.gs` | Core inventory CRUD | Added FK validation for Category/Location |
+| `DashboardCacheService.gs` | Pre-computed metrics caching | TTLs moved to Config, single setValues call |
+| `Utils.gs` | Shared utilities | Added wrapApiCall, Logger utility |
+| `Config.gs` | Central configuration | Added cache TTLs, performance settings |
+| `InventoryAnalyticsService.gs` | Health scoring and analytics | Decomposed refreshAllMetrics |
+| `TaxonomyService.gs` | Categories, locations, tags | No changes |
+| `CustomerService.gs` | Customer management | No changes |
+| `TestDataGenerator.gs` | Test data generation with guards | No changes |
 
 ### Client-Side Files (.html)
 
-| File | Size | Purpose |
-|------|------|---------|
-| `WebApp.html` | 93.0 KB | Standalone web application |
-| `ControlCenter.html` | 85.6 KB | Full-viewport control center modal |
-| `Sidebar.html` | 81.6 KB | Google Sheets sidebar panel |
-| `Dialogs.html` | 33.7 KB | Modal dialogs (Add Item/Sale/Customer) |
-| `SharedStyles.html` | 6.5 KB | Common CSS variables and styles |
-| `SharedScripts.html` | 2.9 KB | Common JavaScript utilities |
-
-**Total Codebase Size:** ~545 KB
+| File | Purpose | Post-Refactoring Changes |
+|------|---------|--------------------------|
+| `WebApp.html` | Standalone web application | SharedStyles/Scripts includes, ARIA, skeletons, request cancellation |
+| `ControlCenter.html` | Full-viewport control center modal | Same as above, plus passphrase settings UI |
+| `Sidebar.html` | Google Sheets sidebar panel | Same as above |
+| `Dialogs.html` | Modal dialogs (Add Item/Sale/Customer) | Form labels with for/id, client-side validation |
+| `SharedStyles.html` | Common CSS variables and styles | Canonical source, included by all files |
+| `SharedScripts.html` | Common JavaScript utilities | Canonical source, included by all files |
 
 ---
 
@@ -130,19 +154,24 @@ This is a **container-bound** Google Apps Script application for antique invento
                                            │
                                     ┌──────▼──────┐
                                     │    Utils    │
+                                    │ (wrapApiCall│
+                                    │  Logger)    │
                                     └──────┬──────┘
                                            │
                                     ┌──────▼──────┐
                                     │ DataService │
+                                    │ (buffered   │
+                                    │  logging)   │
                                     └──────┬──────┘
                                            │
         ┌──────────────┬───────────────────┼───────────────────┬──────────────┐
         │              │                   │                   │              │
         ▼              ▼                   ▼                   ▼              ▼
 ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌──────────────┐ ┌─────────────────────┐
-│InventoryServ │ │ TaxonomyServ  │ │ CustomerServ  │ │ DashboardCa- │ │ TestDataGenerator   │
-└───────┬───────┘ └───────────────┘ └───────────────┘ │ cheService   │ └─────────────────────┘
-        │                                             └──────────────┘
+│InventoryServ │ │ TaxonomyServ  │ │ CustomerServ  │ │ DashboardCa- │ │ AccessControlServ   │
+│ (FK valid.)  │ │               │ │               │ │ cheService   │ │ (NEW)               │
+└───────┬───────┘ └───────────────┘ └───────────────┘ └──────────────┘ └─────────────────────┘
+        │
         │
 ┌───────▼───────────────┐
 │InventoryAnalyticsServ │
@@ -150,55 +179,20 @@ This is a **container-bound** Google Apps Script application for antique invento
         │
 ┌───────▼───────────────┐
 │     SalesService      │ ──────► CustomerService (for stats updates)
+│   (FK validation)     │
 └───────┬───────────────┘
         │
 ┌───────▼───────────────┐
 │   BulkOperations      │ ──────► InventoryService, SalesService
+│ (no N+1, flush pts)   │
 └───────┬───────────────┘
         │
 ┌───────▼───────────────┐
 │       Main.gs         │ ──────► All Services (API layer)
+│  (wrapApiCall,        │ ──────► AccessControlService
+│   sanitizeForClient)  │
 └───────────────────────┘
 ```
-
----
-
-## Data Model
-
-### Entity Relationships
-
-```
-INVENTORY (Item_ID) ─────┬───────────────────► CATEGORIES (Category_ID)
-                         │                     LOCATIONS (Location_ID)
-                         │                     Parent_ID → INVENTORY (self-ref)
-                         │
-                         ├──◄ VARIANTS (Parent_Item_ID)
-                         ├──◄ ITEM_TAGS (Item_ID) ►── TAGS (Tag_ID)
-                         ├──◄ BUNDLE_ITEMS (Item_ID) ►── BUNDLES (Bundle_ID)
-                         └──◄ SALES (Item_ID)
-                                    │
-                                    └───────────► CUSTOMERS (Customer_ID)
-                                                  WEEKLY_SALES (Week_ID)
-```
-
-### Sheet Definitions
-
-| Sheet | ID Prefix | Key Fields |
-|-------|-----------|------------|
-| `Inventory` | INV | Item_ID, Name, Category_ID, Location_ID, Price, Status |
-| `Variants` | VAR | Variant_ID, Parent_Item_ID, Size, Color, Price_Modifier |
-| `Bundles` | BND | Bundle_ID, Name, Bundle_Price, Items_Count |
-| `Bundle_Items` | - | Bundle_ID, Item_ID, Quantity |
-| `Categories` | CAT | Category_ID, Name, Parent_ID, Description |
-| `Locations` | LOC | Location_ID, Name, Item_Count, Capacity |
-| `Tags` | TAG | Tag_ID, Name, Color |
-| `Item_Tags` | - | Item_ID, Tag_ID |
-| `Sales` | SLE | Sale_ID, Item_ID, Customer_ID, Price, Date, Payment_Method |
-| `Weekly_Sales` | - | Week_ID, Revenue, Items_Sold, Avg_Price |
-| `Customers` | CUS | Customer_ID, Name, Email, Phone, Total_Purchases |
-| `Settings` | - | Key, Value |
-| `Activity_Log` | - | Timestamp, Action, Entity_Type, Entity_ID, Details |
-| `Dashboard_Cache` | - | Metric_Key, Category, Value, Updated_At |
 
 ---
 
@@ -226,12 +220,23 @@ const CONFIG = {
   SHEETS: { /* sheet definitions */ },
   ENUMS: { /* status, conditions, etc. */ },
   BUSINESS_RULES: { /* thresholds, weights */ },
-  VALIDATION: { /* max lengths, limits */ }
+  VALIDATION: { /* max lengths, limits */ },
+  PERFORMANCE: { /* cache TTLs, batch sizes */ }  // NEW
 };
 Object.freeze(CONFIG);
 ```
 
-### 3. Cache-First Strategy
+### 3. Standardized Error Handling (NEW)
+All API functions use consistent error wrapping:
+```javascript
+function getInventory(options) {
+  return Utils.wrapApiCall(() => {
+    return sanitizeForClient(InventoryService.getItems(options));
+  }, 'getInventory');
+}
+```
+
+### 4. Cache-First Strategy
 Dashboard data served from cache with TTL, background refresh via triggers:
 ```javascript
 const cached = DashboardCacheService.getMetric('quick_stats');
@@ -241,7 +246,7 @@ if (cached && !needsRefresh(cached)) {
 // Compute fresh and cache
 ```
 
-### 4. Event Delegation (Frontend)
+### 5. Event Delegation (Frontend)
 Centralized event handling using data-action attributes:
 ```javascript
 document.body.addEventListener('click', function(e) {
@@ -250,7 +255,19 @@ document.body.addEventListener('click', function(e) {
 });
 ```
 
-### 5. N+1 Query Prevention
+### 6. Request Cancellation (NEW)
+Prevents race conditions when switching panels:
+```javascript
+var requestVersion = ++State.requestVersions.dashboard;
+google.script.run
+  .withSuccessHandler(function(data) {
+    if (requestVersion !== State.requestVersions.dashboard) return; // Stale
+    renderDashboard(data);
+  })
+  .getDashboardV2();
+```
+
+### 7. N+1 Query Prevention
 Uses lookup maps and batch fetching:
 ```javascript
 const itemsMap = Utils.buildLookupMap(items, 'Item_ID');
@@ -263,16 +280,46 @@ sales.forEach(sale => {
 
 ## Access Control
 
-### Authentication Methods
+### Authentication Flow
 
-1. **Email Whitelist** - `ALLOWED_EMAILS` array in Main.gs
-2. **Passphrase System** - Daily rotating passphrase for public access
-3. **Google OAuth** - Via `Session.getActiveUser().getEmail()`
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      User Access Request                        │
+└───────────────────────────┬─────────────────────────────────────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │ Is script     │ Yes
+                    │ owner?        │────────────────────┐
+                    └───────┬───────┘                    │
+                            │ No                         │
+                            ▼                            │
+                    ┌───────────────┐                    │
+                    │ @calebsandler │ Yes                │
+                    │ .com domain?  │────────────────────┤
+                    └───────┬───────┘                    │
+                            │ No                         │
+                            ▼                            │
+                    ┌───────────────┐                    │
+                    │ Valid         │ Yes                │
+                    │ passphrase?   │────────────────────┤
+                    └───────┬───────┘                    │
+                            │ No                         ▼
+                            ▼                     ┌─────────────┐
+                    ┌───────────────┐             │ ACCESS      │
+                    │ Show          │             │ GRANTED     │
+                    │ passphrase    │             └─────────────┘
+                    │ prompt        │
+                    └───────────────┘
+```
+
+### Passphrase Modes
+1. **Static** - Admin sets a fixed passphrase
+2. **Daily** - Auto-generated from seed + date (rotates daily)
 
 ### Web App Deployment
-
-- **Execute as:** Deploying user
-- **Access:** Anyone (with passphrase or email check)
+- **Execute as:** Deploying user (script owner)
+- **Access:** Anyone (with owner/domain check or passphrase)
 
 ---
 
@@ -309,15 +356,40 @@ sales.forEach(sale => {
 | Dashboard load (fresh) | 2-5s | Full computation |
 | Inventory page (100 items) | 300-800ms | Paginated read |
 | Single item CRUD | 200-500ms | Single row operation |
-| Bulk operation (100 items) | 5-15s | Batch processing |
+| Bulk operation (100 items) | 3-8s | Optimized batch processing |
 | Full cache refresh | 3-8s | All metrics |
 
 ---
 
-## Environment Modes
+## Refactoring Summary (December 2024)
 
-Configured via Script Properties:
+### Phase 0 (P0) - Critical Fixes
+- [x] SharedStyles/SharedScripts includes in all HTML files
+- [x] Removed ~2300 lines of duplicated CSS/JS
+- [x] Added missing .withFailureHandler() calls
+- [x] Fixed N+1 queries in BulkOperations.gs
 
-- **production** - Safety guards enabled, no test data generation
-- **development** - Test data allowed, verbose logging
-- **debug** - Extended logging, cache bypass option
+### Phase 1 (P1) - Performance
+- [x] Moved cache TTLs to Config.gs
+- [x] Fixed batchSetMetrics to use single setValues call
+- [x] Added activity log buffering (50 entry buffer)
+- [x] Extracted AccessControlService.gs from Main.gs
+- [x] Added SpreadsheetApp.flush() points in bulk ops
+- [x] Fixed lock scope in batchUpdate (chunked processing)
+
+### Phase 2 (P2) - Code Quality
+- [x] Created Utils.wrapApiCall() for standardized errors
+- [x] Applied wrapApiCall to all Main.gs API functions
+- [x] Created Logger utility in Utils.gs
+- [x] Added sanitizeForClient() to all API responses
+- [x] Decomposed updateWeeklySales(), getDashboardV2(), refreshAllMetrics()
+- [x] Added FK validation to createItem() and recordSale()
+- [x] Optimized rebuildAllWeeklySales (single load, group in memory)
+
+### Phase 3 (P3) - UX Improvements
+- [x] Added ARIA attributes to navigation tabs
+- [x] Associated form labels with inputs via for/id
+- [x] Added client-side form validation
+- [x] Added skeleton loaders to ControlCenter and WebApp
+- [x] Simplified access control (owner + domain + passphrase)
+- [x] Added request cancellation pattern for panel switches

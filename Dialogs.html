@@ -157,6 +157,30 @@
     .margin-indicator.fair { background: #fef7e0; color: #e37400; }
     .margin-indicator.poor { background: #fce8e6; color: var(--error); }
 
+    /* Validation feedback styles */
+    .validation-message {
+      font-size: 12px;
+      margin-top: var(--space-xs);
+      display: none;
+    }
+
+    .validation-message.error {
+      color: var(--error);
+      display: block;
+    }
+
+    .form-input:invalid:not(:placeholder-shown) {
+      border-color: var(--error);
+    }
+
+    .form-input:valid:not(:placeholder-shown) {
+      border-color: var(--success);
+    }
+
+    .form-input.validation-error {
+      border-color: var(--error);
+    }
+
     /* Payment options */
     .payment-options {
       display: flex;
@@ -198,73 +222,77 @@
 <body>
   <!-- Add Item Form -->
   <div id="item-form">
-    <form id="add-item-form" data-action="submit-item">
+    <form id="add-item-form" data-action="submit-item" novalidate>
       <div class="form-grid">
         <div class="form-group full-width">
-          <label class="form-label">Item Name *</label>
-          <input type="text" class="form-input" name="Name" required placeholder="Victorian Mahogany Writing Desk">
+          <label class="form-label" for="item-name">Item Name *</label>
+          <input type="text" class="form-input" name="Name" id="item-name" required placeholder="Victorian Mahogany Writing Desk">
+          <div class="validation-message" id="item-name-error">Please enter an item name</div>
         </div>
 
         <div class="form-group full-width">
-          <label class="form-label">Description</label>
-          <textarea class="form-input" name="Description" placeholder="Detailed description of the item..."></textarea>
+          <label class="form-label" for="item-description">Description</label>
+          <textarea class="form-input" name="Description" id="item-description" placeholder="Detailed description of the item..."></textarea>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Category</label>
+          <label class="form-label" for="category-select">Category</label>
           <select class="form-input" name="Category_ID" id="category-select">
             <option value="">Select category...</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Location</label>
+          <label class="form-label" for="location-select">Location</label>
           <select class="form-input" name="Location_ID" id="location-select">
             <option value="">Select location...</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Condition</label>
+          <label class="form-label" for="condition-select">Condition</label>
           <select class="form-input" name="Condition" id="condition-select">
             <option value="Good">Good</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Era/Period</label>
+          <label class="form-label" for="era-select">Era/Period</label>
           <select class="form-input" name="Era" id="era-select">
             <option value="">Select era...</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Price</label>
+          <label class="form-label" for="item-price">Price</label>
           <div class="price-input-group">
-            <input type="number" class="form-input" name="Price" step="0.01" min="0" placeholder="0.00">
+            <input type="number" class="form-input" name="Price" id="item-price" step="0.01" min="0" placeholder="0.00" data-validation="price">
           </div>
+          <div class="validation-message" id="item-price-error">Price must be 0 or greater</div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Cost</label>
+          <label class="form-label" for="item-cost">Cost</label>
           <div class="price-input-group">
-            <input type="number" class="form-input" name="Cost" step="0.01" min="0" placeholder="0.00">
+            <input type="number" class="form-input" name="Cost" id="item-cost" step="0.01" min="0" placeholder="0.00" data-validation="price">
           </div>
+          <div class="validation-message" id="item-cost-error">Cost must be 0 or greater</div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Quantity</label>
-          <input type="number" class="form-input" name="Quantity" min="1" value="1">
+          <label class="form-label" for="item-quantity">Quantity</label>
+          <input type="number" class="form-input" name="Quantity" id="item-quantity" min="1" value="1" required data-validation="quantity">
+          <div class="validation-message" id="item-quantity-error">Quantity must be 1 or greater</div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">SKU</label>
-          <input type="text" class="form-input" name="SKU" placeholder="RSW-0001">
+          <label class="form-label" for="item-sku">SKU</label>
+          <input type="text" class="form-input" name="SKU" id="item-sku" placeholder="RSW-0001">
         </div>
 
         <div class="form-group full-width">
-          <label class="form-label">Notes</label>
-          <textarea class="form-input" name="Notes" placeholder="Additional notes..."></textarea>
+          <label class="form-label" for="item-notes">Notes</label>
+          <textarea class="form-input" name="Notes" id="item-notes" placeholder="Additional notes..."></textarea>
         </div>
       </div>
 
@@ -281,20 +309,22 @@
       <div class="item-info-placeholder">Select an item to see details</div>
     </div>
 
-    <form id="add-sale-form" data-action="submit-sale">
+    <form id="add-sale-form" data-action="submit-sale" novalidate>
       <div class="form-grid">
         <div class="form-group full-width">
-          <label class="form-label">Item *</label>
+          <label class="form-label" for="item-select">Item *</label>
           <select class="form-input" name="Item_ID" id="item-select" required data-action="item-selected">
             <option value="">Select item...</option>
           </select>
+          <div class="validation-message" id="item-select-error">Please select an item</div>
         </div>
 
         <div class="form-group full-width">
-          <label class="form-label">Sale Price</label>
+          <label class="form-label" for="sale-price">Sale Price *</label>
           <div class="price-input-group">
-            <input type="number" class="form-input" name="Unit_Price" id="sale-price" step="0.01" min="0" required data-action="update-margin">
+            <input type="number" class="form-input" name="Unit_Price" id="sale-price" step="0.01" min="0" required data-action="update-margin" data-validation="price">
           </div>
+          <div class="validation-message" id="sale-price-error">Sale price must be 0 or greater</div>
           <div class="discount-buttons" id="discount-buttons">
             <button type="button" class="discount-btn" data-action="apply-discount" data-discount="0">Full Price</button>
             <button type="button" class="discount-btn" data-action="apply-discount" data-discount="5">-5%</button>
@@ -305,20 +335,21 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Customer</label>
+          <label class="form-label" for="customer-select">Customer</label>
           <select class="form-input" name="Customer_ID" id="customer-select">
             <option value="">Walk-in customer</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Quantity</label>
-          <input type="number" class="form-input" name="Quantity" id="sale-quantity" value="1" min="1" data-action="update-margin">
+          <label class="form-label" for="sale-quantity">Quantity *</label>
+          <input type="number" class="form-input" name="Quantity" id="sale-quantity" value="1" min="1" required data-action="update-margin" data-validation="quantity">
+          <div class="validation-message" id="sale-quantity-error">Quantity must be 1 or greater</div>
         </div>
 
         <div class="form-group full-width">
-          <label class="form-label">Payment Method</label>
-          <div class="payment-options" id="payment-options"></div>
+          <label class="form-label" id="payment-method-label">Payment Method</label>
+          <div class="payment-options" id="payment-options" role="radiogroup" aria-labelledby="payment-method-label"></div>
           <input type="hidden" name="Payment_Method" id="payment-method-input" value="Cash">
         </div>
 
@@ -344,8 +375,8 @@
         </div>
 
         <div class="form-group full-width">
-          <label class="form-label">Notes</label>
-          <textarea class="form-input" name="Notes" placeholder="Sale notes..."></textarea>
+          <label class="form-label" for="sale-notes">Notes</label>
+          <textarea class="form-input" name="Notes" id="sale-notes" placeholder="Sale notes..."></textarea>
         </div>
       </div>
 
@@ -358,31 +389,33 @@
 
   <!-- Customer Form -->
   <div id="customer-form" class="hidden">
-    <form id="add-customer-form" data-action="submit-customer">
+    <form id="add-customer-form" data-action="submit-customer" novalidate>
       <div class="form-grid">
         <div class="form-group full-width">
-          <label class="form-label">Name *</label>
-          <input type="text" class="form-input" name="Name" required placeholder="John Smith">
+          <label class="form-label" for="customer-name">Name *</label>
+          <input type="text" class="form-input" name="Name" id="customer-name" required placeholder="John Smith">
+          <div class="validation-message" id="customer-name-error">Please enter a customer name</div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-input" name="Email" placeholder="john@example.com">
+          <label class="form-label" for="customer-email">Email</label>
+          <input type="email" class="form-input" name="Email" id="customer-email" placeholder="john@example.com">
+          <div class="validation-message" id="customer-email-error">Please enter a valid email address</div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Phone</label>
-          <input type="tel" class="form-input" name="Phone" placeholder="(555) 123-4567">
+          <label class="form-label" for="customer-phone">Phone</label>
+          <input type="tel" class="form-input" name="Phone" id="customer-phone" placeholder="(555) 123-4567">
         </div>
 
         <div class="form-group full-width">
-          <label class="form-label">Address</label>
-          <textarea class="form-input" name="Address" placeholder="123 Main St, City, State 12345"></textarea>
+          <label class="form-label" for="customer-address">Address</label>
+          <textarea class="form-input" name="Address" id="customer-address" placeholder="123 Main St, City, State 12345"></textarea>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Preferred Contact</label>
-          <select class="form-input" name="Preferred_Contact">
+          <label class="form-label" for="preferred-contact">Preferred Contact</label>
+          <select class="form-input" name="Preferred_Contact" id="preferred-contact">
             <option value="Email">Email</option>
             <option value="Phone">Phone</option>
             <option value="Text">Text</option>
@@ -390,8 +423,8 @@
         </div>
 
         <div class="form-group full-width">
-          <label class="form-label">Notes</label>
-          <textarea class="form-input" name="Notes" placeholder="Customer notes..."></textarea>
+          <label class="form-label" for="customer-notes">Notes</label>
+          <textarea class="form-input" name="Notes" id="customer-notes" placeholder="Customer notes..."></textarea>
         </div>
       </div>
 
@@ -423,6 +456,7 @@
 
     function init() {
       setupEventDelegation();
+      setupValidation();
       loadFormData();
     }
 
@@ -744,9 +778,16 @@
     // ============================================================================
     function submitItem(event) {
       event.preventDefault();
-      showLoading();
 
       var form = document.getElementById('add-item-form');
+
+      // Validate form before submission
+      if (!validateForm(form)) {
+        return;
+      }
+
+      showLoading();
+
       var formData = new FormData(form);
       var data = {};
       formData.forEach(function(value, key) { data[key] = value; });
@@ -763,9 +804,16 @@
 
     function submitSale(event) {
       event.preventDefault();
-      showLoading();
 
       var form = document.getElementById('add-sale-form');
+
+      // Validate form before submission
+      if (!validateForm(form)) {
+        return;
+      }
+
+      showLoading();
+
       var formData = new FormData(form);
       var data = {};
       formData.forEach(function(value, key) { data[key] = value; });
@@ -782,9 +830,16 @@
 
     function submitCustomer(event) {
       event.preventDefault();
-      showLoading();
 
       var form = document.getElementById('add-customer-form');
+
+      // Validate form before submission
+      if (!validateForm(form)) {
+        return;
+      }
+
+      showLoading();
+
       var formData = new FormData(form);
       var data = {};
       formData.forEach(function(value, key) { data[key] = value; });
@@ -797,6 +852,145 @@
         })
         .withFailureHandler(handleError)
         .createCustomer(data);
+    }
+
+    // ============================================================================
+    // FORM VALIDATION
+    // ============================================================================
+    function setupValidation() {
+      // Add blur event listeners for real-time validation feedback
+      document.querySelectorAll('[data-validation]').forEach(function(input) {
+        input.addEventListener('blur', function() {
+          validateField(input);
+        });
+        input.addEventListener('input', function() {
+          // Clear error state on input
+          clearFieldError(input);
+        });
+      });
+
+      // Add validation for required fields
+      document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(input) {
+        input.addEventListener('blur', function() {
+          validateRequired(input);
+        });
+        input.addEventListener('input', function() {
+          clearFieldError(input);
+        });
+      });
+
+      // Add email validation
+      document.querySelectorAll('input[type="email"]').forEach(function(input) {
+        input.addEventListener('blur', function() {
+          validateEmail(input);
+        });
+      });
+    }
+
+    function validateField(input) {
+      var validationType = input.dataset.validation;
+      var value = parseFloat(input.value);
+      var isValid = true;
+      var errorMessage = '';
+
+      if (validationType === 'price') {
+        // Price must be >= 0 (empty is allowed for optional fields)
+        if (input.value !== '' && (isNaN(value) || value < 0)) {
+          isValid = false;
+          errorMessage = 'Price must be 0 or greater';
+        }
+      } else if (validationType === 'quantity') {
+        // Quantity must be >= 1
+        if (input.value === '' || isNaN(value) || value < 1 || !Number.isInteger(value)) {
+          isValid = false;
+          errorMessage = 'Quantity must be 1 or greater';
+        }
+      }
+
+      if (!isValid) {
+        showFieldError(input, errorMessage);
+      } else {
+        clearFieldError(input);
+      }
+
+      return isValid;
+    }
+
+    function validateRequired(input) {
+      var value = input.value.trim();
+      if (input.hasAttribute('required') && value === '') {
+        var label = input.closest('.form-group').querySelector('.form-label');
+        var fieldName = label ? label.textContent.replace('*', '').trim() : 'This field';
+        showFieldError(input, 'Please enter ' + fieldName.toLowerCase());
+        return false;
+      }
+      return true;
+    }
+
+    function validateEmail(input) {
+      var value = input.value.trim();
+      if (value !== '') {
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          showFieldError(input, 'Please enter a valid email address');
+          return false;
+        }
+      }
+      clearFieldError(input);
+      return true;
+    }
+
+    function showFieldError(input, message) {
+      input.classList.add('validation-error');
+      var errorEl = document.getElementById(input.id + '-error');
+      if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.add('error');
+      }
+    }
+
+    function clearFieldError(input) {
+      input.classList.remove('validation-error');
+      var errorEl = document.getElementById(input.id + '-error');
+      if (errorEl) {
+        errorEl.classList.remove('error');
+      }
+    }
+
+    function validateForm(form) {
+      var isValid = true;
+      var firstInvalidField = null;
+
+      // Validate all required fields
+      form.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(input) {
+        if (!validateRequired(input)) {
+          isValid = false;
+          if (!firstInvalidField) firstInvalidField = input;
+        }
+      });
+
+      // Validate all fields with data-validation attribute
+      form.querySelectorAll('[data-validation]').forEach(function(input) {
+        if (!validateField(input)) {
+          isValid = false;
+          if (!firstInvalidField) firstInvalidField = input;
+        }
+      });
+
+      // Validate email fields
+      form.querySelectorAll('input[type="email"]').forEach(function(input) {
+        if (!validateEmail(input)) {
+          isValid = false;
+          if (!firstInvalidField) firstInvalidField = input;
+        }
+      });
+
+      // Focus on first invalid field
+      if (firstInvalidField) {
+        firstInvalidField.focus();
+      }
+
+      return isValid;
     }
 
     // ============================================================================

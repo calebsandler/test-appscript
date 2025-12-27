@@ -949,7 +949,7 @@
         }
       }
 
-      /* Skeleton */
+      /* Skeleton Loaders (P3-4) */
       .skeleton {
         background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
         background-size: 200% 100%;
@@ -958,8 +958,44 @@
       }
 
       .skeleton-card {
-        height: 100px;
+        height: 120px;
         margin-bottom: var(--space-md);
+        border-radius: var(--radius-md);
+      }
+
+      .skeleton-stat-card {
+        height: 90px;
+        border-radius: var(--radius-md);
+      }
+
+      .skeleton-chart {
+        height: 280px;
+        border-radius: var(--radius-md);
+      }
+
+      .skeleton-health {
+        height: 180px;
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-xl);
+      }
+
+      .skeleton-table-row {
+        height: 40px;
+        margin-bottom: var(--space-sm);
+      }
+
+      .skeleton-sale-card {
+        height: 80px;
+        margin-bottom: var(--space-sm);
+        border-radius: var(--radius-md);
+      }
+
+      .skeleton-container {
+        display: contents;
+      }
+
+      .skeleton-container.hidden {
+        display: none;
       }
 
       @keyframes shimmer {
@@ -1060,37 +1096,37 @@
 
       <!-- Body -->
       <div class="app-body">
-        <!-- Side Navigation -->
+        <!-- Side Navigation (P3-1: ARIA attributes for tabs) -->
         <nav class="app-sidebar" id="app-sidebar">
-          <div class="app-nav">
-            <div class="nav-section-label">Overview</div>
-            <button class="nav-item active" data-panel="dashboard">
+          <div class="app-nav" role="tablist" aria-label="Main navigation">
+            <div class="nav-section-label" id="nav-section-overview">Overview</div>
+            <button class="nav-item active" data-panel="dashboard" role="tab" aria-selected="true" aria-controls="dashboard-panel" id="tab-dashboard">
               <i data-lucide="layout-dashboard"></i>
               Dashboard
             </button>
 
-            <div class="nav-section-label">Manage</div>
-            <button class="nav-item" data-panel="inventory">
+            <div class="nav-section-label" id="nav-section-manage">Manage</div>
+            <button class="nav-item" data-panel="inventory" role="tab" aria-selected="false" aria-controls="inventory-panel" id="tab-inventory">
               <i data-lucide="archive"></i>
               Inventory
             </button>
-            <button class="nav-item" data-panel="sales">
+            <button class="nav-item" data-panel="sales" role="tab" aria-selected="false" aria-controls="sales-panel" id="tab-sales">
               <i data-lucide="receipt"></i>
               Sales
             </button>
-            <button class="nav-item" data-panel="add">
+            <button class="nav-item" data-panel="add" role="tab" aria-selected="false" aria-controls="add-panel" id="tab-add">
               <i data-lucide="plus-circle"></i>
               Add New
             </button>
 
             <div class="nav-divider"></div>
 
-            <div class="nav-section-label">System</div>
-            <button class="nav-item" data-panel="tools">
+            <div class="nav-section-label" id="nav-section-system">System</div>
+            <button class="nav-item" data-panel="tools" role="tab" aria-selected="false" aria-controls="tools-panel" id="tab-tools">
               <i data-lucide="wrench"></i>
               Tools
             </button>
-            <button class="nav-item" data-panel="settings">
+            <button class="nav-item" data-panel="settings" role="tab" aria-selected="false" aria-controls="settings-panel" id="tab-settings">
               <i data-lucide="settings"></i>
               Settings
             </button>
@@ -1101,8 +1137,8 @@
         <main class="app-main">
           <!-- Content Area -->
           <div class="app-content">
-            <!-- Dashboard Panel -->
-            <div id="dashboard-panel" class="app-panel active">
+            <!-- Dashboard Panel (P3-1: ARIA tabpanel role) -->
+            <div id="dashboard-panel" class="app-panel active" role="tabpanel" aria-labelledby="tab-dashboard">
               <!-- Stats Cards -->
               <div class="stats-grid">
                 <div class="stat-card">
@@ -1185,8 +1221,8 @@
               </div>
             </div>
 
-            <!-- Inventory Panel -->
-            <div id="inventory-panel" class="app-panel">
+            <!-- Inventory Panel (P3-1: ARIA tabpanel role) -->
+            <div id="inventory-panel" class="app-panel" role="tabpanel" aria-labelledby="tab-inventory">
               <div class="section">
                 <div class="filter-bar">
                   <button class="filter-btn active" data-filter="all">All</button>
@@ -1207,8 +1243,8 @@
               </div>
             </div>
 
-            <!-- Sales Panel -->
-            <div id="sales-panel" class="app-panel">
+            <!-- Sales Panel (P3-1: ARIA tabpanel role) -->
+            <div id="sales-panel" class="app-panel" role="tabpanel" aria-labelledby="tab-sales">
               <div class="section">
                 <div class="section-header">
                   <div class="section-title">Recent Sales</div>
@@ -1225,8 +1261,8 @@
               </div>
             </div>
 
-            <!-- Add Panel -->
-            <div id="add-panel" class="app-panel">
+            <!-- Add Panel (P3-1: ARIA tabpanel role) -->
+            <div id="add-panel" class="app-panel" role="tabpanel" aria-labelledby="tab-add">
               <div class="form-grid">
                 <!-- Add Item Form -->
                 <div class="form-card">
@@ -1322,8 +1358,8 @@
               </div>
             </div>
 
-            <!-- Tools Panel -->
-            <div id="tools-panel" class="app-panel">
+            <!-- Tools Panel (P3-1: ARIA tabpanel role) -->
+            <div id="tools-panel" class="app-panel" role="tabpanel" aria-labelledby="tab-tools">
               <div class="tools-grid">
                 <div class="tool-card" data-action="export-csv">
                   <div class="tool-icon">
@@ -1368,8 +1404,74 @@
               </div>
             </div>
 
-            <!-- Settings Panel -->
-            <div id="settings-panel" class="app-panel">
+            <!-- Settings Panel (P3-1: ARIA tabpanel role) -->
+            <div id="settings-panel" class="app-panel" role="tabpanel" aria-labelledby="tab-settings">
+              <!-- Display Settings Section -->
+              <div class="section">
+                <div class="section-header">
+                  <div class="section-title">Display Settings</div>
+                </div>
+                <div class="section-body">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+                    <div>
+                      <label style="display: block; font-weight: 500; margin-bottom: var(--space-sm);">Items Per Page</label>
+                      <select class="form-input" id="wa-setting-page-size">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="30" selected>30</option>
+                        <option value="50">50</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display: block; font-weight: 500; margin-bottom: var(--space-sm);">Currency Symbol</label>
+                      <select class="form-input" id="wa-setting-currency">
+                        <option value="$" selected>$ (USD)</option>
+                        <option value="GBP">GBP (British Pound)</option>
+                        <option value="EUR">EUR (Euro)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="display: block; font-weight: 500; margin-bottom: var(--space-sm);">Date Format</label>
+                      <select class="form-input" id="wa-setting-date-format">
+                        <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
+                        <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Business Rules Section -->
+              <div class="section">
+                <div class="section-header">
+                  <div class="section-title">Business Rules</div>
+                </div>
+                <div class="section-body">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+                    <div>
+                      <label style="display: block; font-weight: 500; margin-bottom: var(--space-sm);">Low Margin Threshold (%)</label>
+                      <input type="number" class="form-input" id="wa-setting-low-margin" value="30" min="0" max="100" />
+                      <p style="color: var(--gray-500); font-size: 12px; margin-top: var(--space-xs);">Items below this margin will be flagged</p>
+                    </div>
+                    <div>
+                      <label style="display: block; font-weight: 500; margin-bottom: var(--space-sm);">Aging Warning (Days)</label>
+                      <input type="number" class="form-input" id="wa-setting-aging-days" value="90" min="1" />
+                      <p style="color: var(--gray-500); font-size: 12px; margin-top: var(--space-xs);">Items older than this will show aging warning</p>
+                    </div>
+                    <div>
+                      <label style="display: block; font-weight: 500; margin-bottom: var(--space-sm);">Default Location</label>
+                      <select class="form-input" id="wa-setting-default-location">
+                        <option value="">None</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="margin-top: var(--space-xl);">
+                    <button class="btn btn-primary" onclick="saveDisplaySettings()">Save Display Settings</button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Session Section -->
               <div class="section">
                 <div class="section-header">
@@ -1501,7 +1603,16 @@
         },
         availableItems: [],
         isLoading: false,
-        sidebarOpen: false
+        sidebarOpen: false,
+        // P3-6: Request cancellation - version counters per panel
+        requestVersions: {
+          dashboard: 0,
+          inventory: 0,
+          sales: 0,
+          tools: 0,
+          add: 0,
+          settings: 0
+        }
       };
 
       var charts = { category: null, revenue: null };
@@ -1834,11 +1945,19 @@
       function switchPanel(panelId, pushState) {
         State.currentPanel = panelId;
 
-        document.querySelectorAll('.nav-item').forEach(function(item) {
-          item.classList.remove('active');
+        // P3-6: Increment request version to cancel pending requests for other panels
+        Object.keys(State.requestVersions).forEach(function(panel) {
+          if (panel !== panelId) {
+            State.requestVersions[panel]++;
+          }
         });
-        var navItem = document.querySelector('.nav-item[data-panel="' + panelId + '"]');
-        if (navItem) navItem.classList.add('active');
+
+        // P3-1: Update ARIA attributes on tabs
+        document.querySelectorAll('.nav-item[role="tab"]').forEach(function(item) {
+          var isActive = item.dataset.panel === panelId;
+          item.classList.toggle('active', isActive);
+          item.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
 
         document.querySelectorAll('.app-panel').forEach(function(panel) {
           panel.classList.remove('active');
@@ -1910,21 +2029,105 @@
       }
 
       function loadDashboard() {
+        // P3-4: Show skeleton loaders
+        showDashboardSkeletons();
+
+        // P3-6: Capture current request version
+        var requestVersion = ++State.requestVersions.dashboard;
+
         google.script.run
           .withSuccessHandler(function(data) {
+            // P3-6: Check if this request is still valid (not stale)
+            if (requestVersion !== State.requestVersions.dashboard) {
+              return; // Discard stale response
+            }
             hideLoading();
+            hideDashboardSkeletons();
             renderDashboard(data);
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(error) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.dashboard) {
+              return; // Discard stale error
+            }
+            hideDashboardSkeletons();
+            handleError(error);
+          })
           .getDashboardV2();
+      }
+
+      // P3-4: Dashboard skeleton helper functions
+      function showDashboardSkeletons() {
+        var statsGrid = document.querySelector('#dashboard-panel .stats-grid');
+        var healthCard = document.querySelector('#dashboard-panel .health-card');
+        var twoCol = document.querySelector('#dashboard-panel .two-col');
+
+        // Only save original content if not already showing skeletons (prevents double-call bug)
+        if (statsGrid && !statsGrid.dataset.originalContent) {
+          statsGrid.dataset.originalContent = statsGrid.innerHTML;
+          statsGrid.innerHTML =
+            '<div class="skeleton skeleton-stat-card"></div>' +
+            '<div class="skeleton skeleton-stat-card"></div>' +
+            '<div class="skeleton skeleton-stat-card"></div>' +
+            '<div class="skeleton skeleton-stat-card"></div>';
+        }
+        if (healthCard && healthCard.dataset.originalDisplay === undefined) {
+          healthCard.dataset.originalDisplay = healthCard.style.display || '';
+          healthCard.style.display = 'none';
+          var existingSkeleton = document.getElementById('skeleton-health');
+          if (!existingSkeleton) {
+            var skeletonHealth = document.createElement('div');
+            skeletonHealth.className = 'skeleton skeleton-health';
+            skeletonHealth.id = 'skeleton-health';
+            healthCard.parentNode.insertBefore(skeletonHealth, healthCard);
+          }
+        }
+        if (twoCol && !twoCol.dataset.originalContent) {
+          twoCol.dataset.originalContent = twoCol.innerHTML;
+          twoCol.innerHTML =
+            '<div class="skeleton skeleton-chart"></div>' +
+            '<div class="skeleton skeleton-chart"></div>';
+        }
+      }
+
+      function hideDashboardSkeletons() {
+        var statsGrid = document.querySelector('#dashboard-panel .stats-grid');
+        var healthCard = document.querySelector('#dashboard-panel .health-card');
+        var twoCol = document.querySelector('#dashboard-panel .two-col');
+        var skeletonHealth = document.getElementById('skeleton-health');
+
+        if (statsGrid && statsGrid.dataset.originalContent) {
+          statsGrid.innerHTML = statsGrid.dataset.originalContent;
+          delete statsGrid.dataset.originalContent;
+        }
+        if (skeletonHealth) {
+          skeletonHealth.remove();
+        }
+        if (healthCard && healthCard.dataset.originalDisplay !== undefined) {
+          healthCard.style.display = healthCard.dataset.originalDisplay || '';
+          delete healthCard.dataset.originalDisplay;
+        }
+        if (twoCol && twoCol.dataset.originalContent) {
+          twoCol.innerHTML = twoCol.dataset.originalContent;
+          delete twoCol.dataset.originalContent;
+        }
       }
 
       function loadInventory(page) {
         page = page || State.inventory.page;
-        showLoading();
+
+        // P3-4: Show skeleton loaders in inventory grid
+        showInventorySkeletons();
+
+        // P3-6: Capture current request version
+        var requestVersion = ++State.requestVersions.inventory;
 
         google.script.run
           .withSuccessHandler(function(data) {
+            // P3-6: Check if this request is still valid (not stale)
+            if (requestVersion !== State.requestVersions.inventory) {
+              return; // Discard stale response
+            }
             hideLoading();
             State.inventory.items = data.items || [];
             State.inventory.allItems = data.items || [];
@@ -1933,30 +2136,86 @@
             State.inventory.total = data.total;
             renderInventory();
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(error) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.inventory) {
+              return; // Discard stale error
+            }
+            hideLoading();
+            handleError(error);
+          })
           .getInventory({ page: page, pageSize: State.inventory.pageSize });
+      }
+
+      // P3-4: Inventory skeleton helper function
+      function showInventorySkeletons() {
+        var container = document.getElementById('inventory-grid');
+        if (container) {
+          container.innerHTML =
+            '<div class="skeleton skeleton-card"></div>' +
+            '<div class="skeleton skeleton-card"></div>' +
+            '<div class="skeleton skeleton-card"></div>' +
+            '<div class="skeleton skeleton-card"></div>' +
+            '<div class="skeleton skeleton-card"></div>' +
+            '<div class="skeleton skeleton-card"></div>';
+        }
       }
 
       function loadSales(page) {
         page = page || State.sales.page;
-        showLoading();
+
+        // P3-4: Show skeleton loaders in sales list
+        showSalesSkeletons();
+
+        // P3-6: Capture current request version
+        var requestVersion = ++State.requestVersions.sales;
 
         google.script.run
           .withSuccessHandler(function(data) {
+            // P3-6: Check if this request is still valid (not stale)
+            if (requestVersion !== State.requestVersions.sales) {
+              return; // Discard stale response
+            }
             hideLoading();
             State.sales.items = data.sales || [];
             State.sales.page = data.page;
             State.sales.totalPages = data.totalPages;
             renderSales();
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(error) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.sales) {
+              return; // Discard stale error
+            }
+            hideLoading();
+            handleError(error);
+          })
           .getSales({ page: page, pageSize: 20 });
       }
 
+      // P3-4: Sales skeleton helper function
+      function showSalesSkeletons() {
+        var container = document.getElementById('sales-list');
+        if (container) {
+          container.innerHTML =
+            '<div class="skeleton skeleton-sale-card"></div>' +
+            '<div class="skeleton skeleton-sale-card"></div>' +
+            '<div class="skeleton skeleton-sale-card"></div>' +
+            '<div class="skeleton skeleton-sale-card"></div>';
+        }
+      }
+
       function loadFormDropdowns() {
+        // P3-6: Capture current request version for Add panel
+        var requestVersion = ++State.requestVersions.add;
+
         // Categories
         google.script.run
           .withSuccessHandler(function(categories) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.add) {
+              return; // Discard stale response
+            }
             var select = document.getElementById('category-select');
             if (select) {
               select.innerHTML = '<option value="">Select...</option>';
@@ -1968,12 +2227,19 @@
               });
             }
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(error) {
+            if (requestVersion !== State.requestVersions.add) return;
+            handleError(error);
+          })
           .getCategoriesList();
 
         // Locations
         google.script.run
           .withSuccessHandler(function(locations) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.add) {
+              return; // Discard stale response
+            }
             var select = document.getElementById('location-select');
             if (select) {
               select.innerHTML = '<option value="">Select...</option>';
@@ -1997,12 +2263,19 @@
               });
             }
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(error) {
+            if (requestVersion !== State.requestVersions.add) return;
+            handleError(error);
+          })
           .getLocations();
 
         // Available items for sale
         google.script.run
           .withSuccessHandler(function(items) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.add) {
+              return; // Discard stale response
+            }
             State.availableItems = items;
             var select = document.getElementById('item-select');
             if (select) {
@@ -2016,13 +2289,34 @@
               });
             }
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(error) {
+            if (requestVersion !== State.requestVersions.add) return;
+            handleError(error);
+          })
           .getAvailableItems();
       }
 
       function loadWeeklySales() {
+        // P3-4: Show skeleton loaders for weekly sales table
+        var container = document.getElementById('weekly-sales-table');
+        if (container) {
+          container.innerHTML =
+            '<div class="skeleton skeleton-table-row"></div>' +
+            '<div class="skeleton skeleton-table-row"></div>' +
+            '<div class="skeleton skeleton-table-row"></div>' +
+            '<div class="skeleton skeleton-table-row"></div>';
+        }
+
+        // P3-6: Capture current request version
+        var requestVersion = ++State.requestVersions.tools;
+
         google.script.run
           .withSuccessHandler(function(weeks) {
+            // P3-6: Check if this request is still valid (not stale)
+            if (requestVersion !== State.requestVersions.tools) {
+              return; // Discard stale response
+            }
+
             var container = document.getElementById('weekly-sales-table');
             if (!weeks || weeks.length === 0) {
               container.innerHTML = '<div class="empty-state"><div class="empty-text">No sales data</div></div>';
@@ -2045,7 +2339,13 @@
             html += '</tbody></table>';
             container.innerHTML = html;
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(error) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.tools) {
+              return; // Discard stale error
+            }
+            handleError(error);
+          })
           .getWeeklySales(12);
       }
 
@@ -2607,6 +2907,15 @@
       var accessInfo = null;
 
       function loadSettings() {
+        // P3-6: Capture current request version for Settings panel
+        var requestVersion = ++State.requestVersions.settings;
+
+        // Load display settings from local state
+        loadDisplaySettingsFromState();
+
+        // Load locations for default location dropdown
+        loadSettingsLocations();
+
         // Show session info from localStorage
         var session = localStorage.getItem('rosewood_session');
         if (session) {
@@ -2623,13 +2932,19 @@
         // Check if user is owner to show passphrase settings
         google.script.run
           .withSuccessHandler(function(isOwnerUser) {
-            if (isOwnerUser) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.settings) {
+              return; // Discard stale response
+            }
+            // Explicitly check for true (isOwner returns boolean, wrapApiCall might return error object)
+            if (isOwnerUser === true) {
               document.getElementById('passphrase-settings-section').classList.remove('hidden');
-              loadPassphraseSettings();
+              loadPassphraseSettings(requestVersion);
             }
           })
-          .withFailureHandler(function() {
+          .withFailureHandler(function(error) {
             // Not owner or error - just hide settings
+            console.log('isOwner check failed:', error);
           })
           .isOwner();
 
@@ -2642,9 +2957,66 @@
         }
       }
 
-      function loadPassphraseSettings() {
+      function loadDisplaySettingsFromState() {
+        // Load from State.settings
+        var pageSizeEl = document.getElementById('wa-setting-page-size');
+        var currencyEl = document.getElementById('wa-setting-currency');
+        var dateFormatEl = document.getElementById('wa-setting-date-format');
+        var lowMarginEl = document.getElementById('wa-setting-low-margin');
+        var agingDaysEl = document.getElementById('wa-setting-aging-days');
+        var defaultLocationEl = document.getElementById('wa-setting-default-location');
+
+        if (pageSizeEl) pageSizeEl.value = State.settings.pageSize || 30;
+        if (currencyEl) currencyEl.value = State.settings.currency || '$';
+        if (dateFormatEl) dateFormatEl.value = State.settings.dateFormat || 'MM/DD/YYYY';
+        if (lowMarginEl) lowMarginEl.value = State.settings.lowMarginThreshold || 30;
+        if (agingDaysEl) agingDaysEl.value = State.settings.agingWarningDays || 90;
+        if (defaultLocationEl) defaultLocationEl.value = State.settings.defaultLocation || '';
+      }
+
+      function loadSettingsLocations() {
+        google.script.run
+          .withSuccessHandler(function(locations) {
+            var select = document.getElementById('wa-setting-default-location');
+            if (select && locations) {
+              // Keep the "None" option
+              select.innerHTML = '<option value="">None</option>';
+              locations.forEach(function(loc) {
+                var option = document.createElement('option');
+                option.value = loc.Location_ID;
+                option.textContent = loc.Name;
+                select.appendChild(option);
+              });
+              // Set current value
+              select.value = State.settings.defaultLocation || '';
+            }
+          })
+          .withFailureHandler(function() {})
+          .getLocations();
+      }
+
+      function saveDisplaySettings() {
+        State.settings.pageSize = parseInt(document.getElementById('wa-setting-page-size').value);
+        State.settings.currency = document.getElementById('wa-setting-currency').value;
+        State.settings.dateFormat = document.getElementById('wa-setting-date-format').value;
+        State.settings.lowMarginThreshold = parseInt(document.getElementById('wa-setting-low-margin').value);
+        State.settings.agingWarningDays = parseInt(document.getElementById('wa-setting-aging-days').value);
+        State.settings.defaultLocation = document.getElementById('wa-setting-default-location').value;
+
+        showToast('Display settings saved', 'success');
+      }
+
+      function loadPassphraseSettings(requestVersion) {
+        // P3-6: Use passed requestVersion or current settings version
+        requestVersion = requestVersion || State.requestVersions.settings;
+
         google.script.run
           .withSuccessHandler(function(settings) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.settings) {
+              return; // Discard stale response
+            }
+
             // Populate form
             var modeSelect = document.getElementById('passphrase-mode');
             var staticInput = document.getElementById('static-passphrase');
@@ -2662,7 +3034,13 @@
 
             togglePassphraseMode(settings.mode || 'static');
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(error) {
+            // P3-6: Check if this request is still valid
+            if (requestVersion !== State.requestVersions.settings) {
+              return; // Discard stale error
+            }
+            handleError(error);
+          })
           .getPassphraseSettings();
       }
 

@@ -802,24 +802,24 @@
       </div>
 
       <!-- Navigation -->
-      <nav class="nav-tabs">
-        <button class="nav-tab active" data-panel="dashboard">
+      <nav class="nav-tabs" role="tablist" aria-label="Main navigation">
+        <button class="nav-tab active" data-panel="dashboard" role="tab" id="tab-dashboard" aria-selected="true" aria-controls="dashboard-panel" tabindex="0">
           <i data-lucide="book-open" class="tab-icon"></i>
           Ledger
         </button>
-        <button class="nav-tab" data-panel="orders">
+        <button class="nav-tab" data-panel="orders" role="tab" id="tab-orders" aria-selected="false" aria-controls="orders-panel" tabindex="-1">
           <i data-lucide="receipt" class="tab-icon"></i>
           Sales
         </button>
-        <button class="nav-tab" data-panel="inventory">
+        <button class="nav-tab" data-panel="inventory" role="tab" id="tab-inventory" aria-selected="false" aria-controls="inventory-panel" tabindex="-1">
           <i data-lucide="archive" class="tab-icon"></i>
           Catalog
         </button>
-        <button class="nav-tab" data-panel="add">
+        <button class="nav-tab" data-panel="add" role="tab" id="tab-add" aria-selected="false" aria-controls="add-panel" tabindex="-1">
           <i data-lucide="plus-circle" class="tab-icon"></i>
           Add
         </button>
-        <button class="nav-tab" data-panel="tools">
+        <button class="nav-tab" data-panel="tools" role="tab" id="tab-tools" aria-selected="false" aria-controls="tools-panel" tabindex="-1">
           <i data-lucide="settings" class="tab-icon"></i>
           Tools
         </button>
@@ -828,7 +828,7 @@
       <!-- Main Content -->
       <main class="main-content">
         <!-- Dashboard Panel -->
-        <div id="dashboard-panel" class="panel active">
+        <div id="dashboard-panel" class="panel active" role="tabpanel" aria-labelledby="tab-dashboard">
           <!-- Health Score -->
           <div class="health-score-card">
             <div class="health-score-header">
@@ -953,7 +953,7 @@
         </div>
 
         <!-- Orders/Sales Panel -->
-        <div id="orders-panel" class="panel">
+        <div id="orders-panel" class="panel" role="tabpanel" aria-labelledby="tab-orders">
           <div class="section-header">
             <span class="section-title">Sales History</span>
             <button class="btn btn-secondary btn-sm" data-action="load-sales">
@@ -965,7 +965,7 @@
         </div>
 
         <!-- Inventory Panel -->
-        <div id="inventory-panel" class="panel">
+        <div id="inventory-panel" class="panel" role="tabpanel" aria-labelledby="tab-inventory">
           <div class="section-header">
             <span class="section-title">Catalog</span>
             <button class="btn btn-secondary btn-sm" data-action="load-inventory">
@@ -1020,7 +1020,7 @@
         </div>
 
         <!-- Add Panel -->
-        <div id="add-panel" class="panel">
+        <div id="add-panel" class="panel" role="tabpanel" aria-labelledby="tab-add">
           <div class="section-header">
             <span class="section-title">Add New Item</span>
           </div>
@@ -1210,7 +1210,7 @@
         </div>
 
         <!-- Tools Panel -->
-        <div id="tools-panel" class="panel">
+        <div id="tools-panel" class="panel" role="tabpanel" aria-labelledby="tab-tools">
           <div class="section-header">
             <span class="section-title">Tools</span>
           </div>
@@ -1294,7 +1294,15 @@
         searchTimeout: null,
         inventoryFilter: "all",
         isLoading: false,
-        selectedItems: []
+        selectedItems: [],
+        // Request cancellation: version counters per panel to prevent stale responses
+        requestVersions: {
+          dashboard: 0,
+          inventory: 0,
+          orders: 0,
+          add: 0,
+          tools: 0
+        }
       };
 
       // ============================================================================
@@ -1434,18 +1442,30 @@
       function switchPanel(panelId) {
         AppState.currentPanel = panelId;
 
+        // Increment version counters for all panels to invalidate any pending requests
+        // This prevents stale responses from updating the UI when switching tabs
+        Object.keys(AppState.requestVersions).forEach(function(key) {
+          AppState.requestVersions[key]++;
+        });
+
+        // Update tab ARIA attributes
         document.querySelectorAll(".nav-tab").forEach(function (t) {
           t.classList.remove("active");
+          t.setAttribute("aria-selected", "false");
+          t.setAttribute("tabindex", "-1");
         });
-        document
-          .querySelector('.nav-tab[data-panel="' + panelId + '"]')
-          .classList.add("active");
+        var activeTab = document.querySelector('.nav-tab[data-panel="' + panelId + '"]');
+        activeTab.classList.add("active");
+        activeTab.setAttribute("aria-selected", "true");
+        activeTab.setAttribute("tabindex", "0");
 
+        // Update panel visibility
         document.querySelectorAll(".panel").forEach(function (p) {
           p.classList.remove("active");
         });
         document.getElementById(panelId + "-panel").classList.add("active");
 
+        // Load panel-specific data
         if (panelId === "inventory") loadInventory();
         if (panelId === "orders") loadSales();
         if (panelId === "add") loadAvailableItems();
@@ -1549,9 +1569,18 @@
         // Show skeleton loaders immediately for perceived performance
         showDashboardSkeletons();
 
+        // Capture version at request time for stale response detection
+        var requestVersion = AppState.requestVersions.dashboard;
+
         // Load all dashboard data (cache-first)
         google.script.run
           .withSuccessHandler(function (data) {
+            // Check if this response is stale (user switched panels)
+            if (requestVersion !== AppState.requestVersions.dashboard) {
+              console.log('Dashboard response discarded - stale request (version mismatch)');
+              return;
+            }
+
             console.log('getDashboardV2 SUCCESS - received data:', data ? JSON.stringify(data).substring(0, 500) : 'NULL');
             hideLoading();
 
@@ -1585,6 +1614,11 @@
             }
           })
           .withFailureHandler(function(err) {
+            // Check if this response is stale
+            if (requestVersion !== AppState.requestVersions.dashboard) {
+              console.log('Dashboard error discarded - stale request');
+              return;
+            }
             console.error('getDashboardV2 FAILED:', err);
             handleError(err);
           })
@@ -1947,20 +1981,29 @@
       function loadInventory(page) {
         page = page || 1;
         var pageSize = 20; // Smaller page size for faster loading
-        
+
         // Show skeleton while loading (only on first page or if container is empty)
         var container = document.getElementById("inventory-list");
         if (page === 1) {
-          container.innerHTML = 
+          container.innerHTML =
             '<div class="skeleton skeleton-card"></div>' +
             '<div class="skeleton skeleton-card"></div>' +
             '<div class="skeleton skeleton-card"></div>';
         }
-        
+
         console.log('Loading inventory page:', page, 'pageSize:', pageSize);
-        
+
+        // Capture version at request time for stale response detection
+        var requestVersion = AppState.requestVersions.inventory;
+
         google.script.run
           .withSuccessHandler(function (data) {
+            // Check if this response is stale (user switched panels)
+            if (requestVersion !== AppState.requestVersions.inventory) {
+              console.log('Inventory response discarded - stale request (version mismatch)');
+              return;
+            }
+
             hideLoading();
             console.log('Inventory data received:', data);
             console.log('Items count:', data.items ? data.items.length : 0, 'Total:', data.total);
@@ -1990,6 +2033,11 @@
             }
           })
           .withFailureHandler(function(err) {
+            // Check if this response is stale
+            if (requestVersion !== AppState.requestVersions.inventory) {
+              console.log('Inventory error discarded - stale request');
+              return;
+            }
             console.error('getInventory FAILED:', err);
             handleError(err);
           })
@@ -2107,8 +2155,18 @@
       function loadSales(page) {
         page = page || 1;
         showLoading();
+
+        // Capture version at request time for stale response detection
+        var requestVersion = AppState.requestVersions.orders;
+
         google.script.run
           .withSuccessHandler(function (data) {
+            // Check if this response is stale (user switched panels)
+            if (requestVersion !== AppState.requestVersions.orders) {
+              console.log('Sales response discarded - stale request (version mismatch)');
+              return;
+            }
+
             hideLoading();
             console.log('Sales data received:', data);
 
@@ -2134,6 +2192,11 @@
             }
           })
           .withFailureHandler(function(err) {
+            // Check if this response is stale
+            if (requestVersion !== AppState.requestVersions.orders) {
+              console.log('Sales error discarded - stale request');
+              return;
+            }
             console.error('getSales FAILED:', err);
             handleError(err);
           })
@@ -2214,8 +2277,17 @@
       }
 
       function loadAvailableItems() {
+        // Capture version at request time for stale response detection
+        var requestVersion = AppState.requestVersions.add;
+
         google.script.run
           .withSuccessHandler(function (items) {
+            // Check if this response is stale (user switched panels)
+            if (requestVersion !== AppState.requestVersions.add) {
+              console.log('Available items response discarded - stale request (version mismatch)');
+              return;
+            }
+
             AppState.availableItems = items;
             var select = document.getElementById("sale-item-select");
             select.innerHTML = '<option value="">Select item...</option>';
@@ -2227,7 +2299,14 @@
               select.appendChild(opt);
             });
           })
-          .withFailureHandler(handleError)
+          .withFailureHandler(function(err) {
+            // Check if this response is stale
+            if (requestVersion !== AppState.requestVersions.add) {
+              console.log('Available items error discarded - stale request');
+              return;
+            }
+            handleError(err);
+          })
           .getAvailableItems();
       }
 
@@ -2241,9 +2320,26 @@
       }
 
       function loadWeeklySales() {
+        // Capture version at request time for stale response detection
+        var requestVersion = AppState.requestVersions.tools;
+
         google.script.run
-          .withSuccessHandler(renderWeeklySales)
-          .withFailureHandler(handleError)
+          .withSuccessHandler(function(weeks) {
+            // Check if this response is stale (user switched panels)
+            if (requestVersion !== AppState.requestVersions.tools) {
+              console.log('Weekly sales response discarded - stale request (version mismatch)');
+              return;
+            }
+            renderWeeklySales(weeks);
+          })
+          .withFailureHandler(function(err) {
+            // Check if this response is stale
+            if (requestVersion !== AppState.requestVersions.tools) {
+              console.log('Weekly sales error discarded - stale request');
+              return;
+            }
+            handleError(err);
+          })
           .getWeeklySales(8);
       }
 
@@ -2292,8 +2388,18 @@
 
         AppState.searchTimeout = setTimeout(function () {
           showLoading();
+
+          // Capture version at request time for stale response detection
+          var requestVersion = AppState.requestVersions.inventory;
+
           google.script.run
             .withSuccessHandler(function (results) {
+              // Check if this response is stale (user switched panels)
+              if (requestVersion !== AppState.requestVersions.inventory) {
+                console.log('Search response discarded - stale request (version mismatch)');
+                return;
+              }
+
               hideLoading();
               switchPanel("inventory");
               document.getElementById("inventory-list").innerHTML = results
@@ -2301,7 +2407,14 @@
                 .join("");
               document.getElementById("inventory-pagination").innerHTML = "";
             })
-            .withFailureHandler(handleError)
+            .withFailureHandler(function(err) {
+              // Check if this response is stale
+              if (requestVersion !== AppState.requestVersions.inventory) {
+                console.log('Search error discarded - stale request');
+                return;
+              }
+              handleError(err);
+            })
             .searchInventory(query);
         }, 400);
       }

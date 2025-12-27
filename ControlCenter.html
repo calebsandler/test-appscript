@@ -1078,7 +1078,7 @@
         color: var(--gray-700);
       }
 
-      /* Skeleton */
+      /* Skeleton Loading Animation */
       .cc-skeleton {
         background: linear-gradient(
           90deg,
@@ -1098,6 +1098,89 @@
         100% {
           background-position: -200% 0;
         }
+      }
+
+      /* Skeleton Loader Components */
+      .cc-skeleton-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+      }
+
+      .cc-skeleton-stat {
+        height: 24px;
+        width: 60%;
+        margin-bottom: var(--space-sm);
+      }
+
+      .cc-skeleton-stat-value {
+        height: 32px;
+        width: 80%;
+      }
+
+      .cc-skeleton-text {
+        height: 14px;
+        width: 100%;
+        margin-bottom: var(--space-sm);
+      }
+
+      .cc-skeleton-text.short {
+        width: 40%;
+      }
+
+      .cc-skeleton-text.medium {
+        width: 60%;
+      }
+
+      .cc-skeleton-text.long {
+        width: 85%;
+      }
+
+      .cc-skeleton-item-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        min-height: 120px;
+      }
+
+      .cc-skeleton-badge {
+        height: 20px;
+        width: 60px;
+        border-radius: var(--radius-full);
+      }
+
+      .cc-skeleton-bar {
+        height: 4px;
+        width: 100%;
+        margin-top: var(--space-sm);
+        border-radius: 2px;
+      }
+
+      .cc-skeleton-chart {
+        height: 250px;
+        border-radius: var(--radius-md);
+      }
+
+      .cc-skeleton-table-row {
+        display: flex;
+        gap: var(--space-md);
+        padding: var(--space-sm) 0;
+        border-bottom: 1px solid var(--gray-100);
+      }
+
+      .cc-skeleton-table-cell {
+        height: 16px;
+        flex: 1;
+      }
+
+      .cc-skeleton-sale-card {
+        background: var(--white);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-sm);
       }
     </style>
   </head>
@@ -1123,30 +1206,30 @@
       <!-- Body -->
       <div class="cc-body">
         <!-- Side Navigation -->
-        <nav class="cc-sidebar">
-          <div class="cc-nav">
-            <button class="cc-nav-item active" data-panel="dashboard">
+        <nav class="cc-sidebar" aria-label="Control Center Navigation">
+          <div class="cc-nav" role="tablist" aria-label="Main navigation tabs">
+            <button class="cc-nav-item active" data-panel="dashboard" role="tab" aria-selected="true" aria-controls="dashboard-panel" id="tab-dashboard">
               <i data-lucide="layout-dashboard"></i>
               Dashboard
             </button>
-            <button class="cc-nav-item" data-panel="inventory">
+            <button class="cc-nav-item" data-panel="inventory" role="tab" aria-selected="false" aria-controls="inventory-panel" id="tab-inventory">
               <i data-lucide="archive"></i>
               Inventory
             </button>
-            <button class="cc-nav-item" data-panel="sales">
+            <button class="cc-nav-item" data-panel="sales" role="tab" aria-selected="false" aria-controls="sales-panel" id="tab-sales">
               <i data-lucide="receipt"></i>
               Sales
             </button>
-            <button class="cc-nav-item" data-panel="add">
+            <button class="cc-nav-item" data-panel="add" role="tab" aria-selected="false" aria-controls="add-panel" id="tab-add">
               <i data-lucide="plus-circle"></i>
               Add New
             </button>
-            <div class="cc-nav-divider"></div>
-            <button class="cc-nav-item" data-panel="tools">
+            <div class="cc-nav-divider" role="separator"></div>
+            <button class="cc-nav-item" data-panel="tools" role="tab" aria-selected="false" aria-controls="tools-panel" id="tab-tools">
               <i data-lucide="wrench"></i>
               Tools
             </button>
-            <button class="cc-nav-item" data-panel="settings">
+            <button class="cc-nav-item" data-panel="settings" role="tab" aria-selected="false" aria-controls="settings-panel" id="tab-settings">
               <i data-lucide="settings"></i>
               Settings
             </button>
@@ -1167,7 +1250,7 @@
           <!-- Content Area -->
           <div class="cc-content">
             <!-- Dashboard Panel -->
-            <div id="dashboard-panel" class="cc-panel active">
+            <div id="dashboard-panel" class="cc-panel active" role="tabpanel" aria-labelledby="tab-dashboard">
               <!-- Stats Cards -->
               <div class="cc-cards-grid">
                 <div class="cc-stat-card">
@@ -1251,7 +1334,7 @@
             </div>
 
             <!-- Inventory Panel -->
-            <div id="inventory-panel" class="cc-panel">
+            <div id="inventory-panel" class="cc-panel" role="tabpanel" aria-labelledby="tab-inventory">
               <div class="cc-section">
                 <div class="cc-filter-bar">
                   <button class="cc-filter-btn active" data-filter="all">All</button>
@@ -1273,7 +1356,7 @@
             </div>
 
             <!-- Sales Panel -->
-            <div id="sales-panel" class="cc-panel">
+            <div id="sales-panel" class="cc-panel" role="tabpanel" aria-labelledby="tab-sales">
               <div class="cc-section">
                 <div class="cc-section-header">
                   <div class="cc-section-title">Recent Sales</div>
@@ -1292,7 +1375,7 @@
             </div>
 
             <!-- Add Panel -->
-            <div id="add-panel" class="cc-panel">
+            <div id="add-panel" class="cc-panel" role="tabpanel" aria-labelledby="tab-add">
               <div class="cc-add-grid">
                 <!-- Add Item Form -->
                 <div class="cc-form-card">
@@ -1395,7 +1478,7 @@
             </div>
 
             <!-- Tools Panel -->
-            <div id="tools-panel" class="cc-panel">
+            <div id="tools-panel" class="cc-panel" role="tabpanel" aria-labelledby="tab-tools">
               <div class="cc-tools-grid">
                 <div class="cc-tool-card" data-action="export-csv">
                   <div class="cc-tool-icon">
@@ -1441,7 +1524,7 @@
             </div>
 
             <!-- Settings Panel -->
-            <div id="settings-panel" class="cc-panel">
+            <div id="settings-panel" class="cc-panel" role="tabpanel" aria-labelledby="tab-settings">
               <div class="cc-settings-grid">
                 <div class="cc-settings-section">
                   <div class="cc-settings-title">Display Settings</div>
@@ -1489,6 +1572,67 @@
                     <select class="cc-form-select" id="setting-default-location">
                       <option value="">None</option>
                     </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Access Control Section (Admin Only) -->
+              <div id="access-control-section" class="cc-settings-section" style="margin-top: var(--space-xl); display: none;">
+                <div class="cc-settings-title">Access Control (Admin Only)</div>
+                <div class="cc-settings-grid">
+                  <div class="cc-settings-section" style="border: none; padding: 0;">
+                    <div class="cc-form-group">
+                      <label class="cc-form-label">Passphrase Mode</label>
+                      <select class="cc-form-select" id="setting-passphrase-mode">
+                        <option value="static">Static (same passphrase)</option>
+                        <option value="daily">Daily (changes each day)</option>
+                      </select>
+                    </div>
+                    <div id="static-passphrase-group" class="cc-form-group">
+                      <label class="cc-form-label">Access Code</label>
+                      <input type="text" class="cc-form-input" id="setting-static-passphrase" placeholder="Enter access code" />
+                      <div class="cc-form-hint">Share this code with external users</div>
+                    </div>
+                    <div id="daily-passphrase-group" class="cc-form-group" style="display: none;">
+                      <label class="cc-form-label">Secret Seed</label>
+                      <input type="text" class="cc-form-input" id="setting-passphrase-seed" placeholder="Secret seed for generation" />
+                      <div class="cc-form-hint">Used to generate daily codes</div>
+                      <div id="todays-passphrase" style="margin-top: var(--space-sm); padding: var(--space-sm); background: var(--primary-light); border-radius: var(--radius-md); font-weight: 600;"></div>
+                    </div>
+                  </div>
+                  <div class="cc-settings-section" style="border: none; padding: 0;">
+                    <div class="cc-form-group">
+                      <label class="cc-form-label">Session Duration (Hours)</label>
+                      <input type="number" class="cc-form-input" id="setting-passphrase-expiry" value="24" min="1" max="720" />
+                      <div class="cc-form-hint">How long access lasts after entering code</div>
+                    </div>
+                    <div class="cc-form-group" style="margin-top: var(--space-lg);">
+                      <button class="cc-btn cc-btn-primary" onclick="savePassphraseSettings()">Save Access Settings</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Web App Link -->
+              <div style="margin-top: var(--space-xl); padding: var(--space-lg); background: var(--bg-secondary); border-radius: var(--radius-lg);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md);">
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: var(--space-xs);">Standalone Web App</div>
+                    <div style="color: var(--text-secondary); font-size: 13px;">Open inventory management in a new browser tab</div>
+                  </div>
+                  <button class="cc-btn cc-btn-secondary" onclick="openWebApp()" style="display: flex; align-items: center; gap: var(--space-sm);">
+                    <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
+                    Open Web App
+                  </button>
+                </div>
+                <div id="webapp-url-section" style="display: none; padding-top: var(--space-md); border-top: 1px solid var(--border-color);">
+                  <div class="cc-form-group" style="margin-bottom: var(--space-sm);">
+                    <label class="cc-form-label">Web App URL (Admin)</label>
+                    <div style="display: flex; gap: var(--space-sm);">
+                      <input type="text" class="cc-form-input" id="setting-webapp-url" placeholder="https://script.google.com/macros/s/.../exec" style="flex: 1;" />
+                      <button class="cc-btn cc-btn-primary" onclick="saveWebAppUrl()">Save</button>
+                    </div>
+                    <div class="cc-form-hint">Set after deploying. Latest: v15</div>
                   </div>
                 </div>
               </div>
@@ -1563,7 +1707,16 @@
           defaultLocation: ''
         },
         availableItems: [],
-        isLoading: false
+        isLoading: false,
+        // Request version counters for cancellation pattern (P3-6)
+        requestVersions: {
+          dashboard: 0,
+          inventory: 0,
+          sales: 0,
+          tools: 0,
+          add: 0,
+          settings: 0
+        }
       };
 
       var charts = { category: null, revenue: null };
@@ -1721,22 +1874,40 @@
       function switchPanel(panelId) {
         State.currentPanel = panelId;
 
-        document.querySelectorAll('.cc-nav-item').forEach(function(item) {
-          item.classList.remove('active');
-        });
-        document.querySelector('.cc-nav-item[data-panel="' + panelId + '"]').classList.add('active');
+        // Increment request version for the new panel to cancel any pending requests (P3-6)
+        if (State.requestVersions.hasOwnProperty(panelId)) {
+          State.requestVersions[panelId]++;
+        }
 
-        document.querySelectorAll('.cc-panel').forEach(function(panel) {
-          panel.classList.remove('active');
+        // Update tab ARIA attributes (P3-1)
+        document.querySelectorAll('.cc-nav-item[role="tab"]').forEach(function(item) {
+          var isActive = item.dataset.panel === panelId;
+          item.classList.toggle('active', isActive);
+          item.setAttribute('aria-selected', isActive ? 'true' : 'false');
         });
-        document.getElementById(panelId + '-panel').classList.add('active');
 
-        // Load data for panel
+        // Update panel visibility and ARIA attributes (P3-1)
+        document.querySelectorAll('.cc-panel[role="tabpanel"]').forEach(function(panel) {
+          var isActive = panel.id === panelId + '-panel';
+          panel.classList.toggle('active', isActive);
+          // Hidden panels should not be focusable
+          if (!isActive) {
+            panel.setAttribute('tabindex', '-1');
+          } else {
+            panel.removeAttribute('tabindex');
+          }
+        });
+
+        // Load data for panel with skeleton loaders
         if (panelId === 'inventory') loadInventory();
         if (panelId === 'sales') loadSales();
         if (panelId === 'add') loadFormDropdowns();
         if (panelId === 'tools') loadWeeklySales();
-        if (panelId === 'settings') loadSettingsDropdowns();
+        if (panelId === 'settings') {
+          loadSettingsDropdowns();
+          loadPassphraseSettings();
+          loadWebAppUrl();
+        }
       }
 
       // ============================================================================
@@ -1752,19 +1923,88 @@
       }
 
       function loadDashboard() {
+        // Show skeleton loaders (P3-4)
+        showDashboardSkeleton();
+
+        // Capture current request version for cancellation check (P3-6)
+        var requestVersion = ++State.requestVersions.dashboard;
+
         google.script.run
-          .withSuccessHandler(renderDashboard)
+          .withSuccessHandler(function(data) {
+            // Check if this request is still valid (P3-6)
+            if (requestVersion !== State.requestVersions.dashboard) {
+              console.log('Dashboard request cancelled - stale version');
+              return;
+            }
+            renderDashboard(data);
+          })
           .withFailureHandler(handleError)
           .getDashboardV2();
       }
 
+      function showDashboardSkeleton() {
+        // Stats cards skeleton
+        var statsGrid = document.querySelector('#dashboard-panel .cc-cards-grid');
+        if (statsGrid) {
+          var skeletonCards = '';
+          for (var i = 0; i < 4; i++) {
+            skeletonCards += '<div class="cc-skeleton-card">' +
+              '<div class="cc-skeleton cc-skeleton-stat"></div>' +
+              '<div class="cc-skeleton cc-skeleton-stat-value"></div>' +
+            '</div>';
+          }
+          statsGrid.innerHTML = skeletonCards;
+        }
+
+        // Health card skeleton
+        var healthScore = document.getElementById('health-score');
+        var healthStatus = document.getElementById('health-status');
+        if (healthScore) healthScore.innerHTML = '<span class="cc-skeleton" style="display:inline-block;width:60px;height:32px;"></span>';
+        if (healthStatus) healthStatus.innerHTML = '<span class="cc-skeleton" style="display:inline-block;width:80px;height:20px;"></span>';
+
+        // Chart skeletons
+        var categoryChart = document.querySelector('#category-chart');
+        var revenueChart = document.querySelector('#revenue-chart');
+        if (categoryChart && categoryChart.parentElement) {
+          categoryChart.parentElement.innerHTML = '<div class="cc-skeleton cc-skeleton-chart"></div>';
+        }
+        if (revenueChart && revenueChart.parentElement) {
+          revenueChart.parentElement.innerHTML = '<div class="cc-skeleton cc-skeleton-chart"></div>';
+        }
+
+        // Action items skeleton
+        var actionItems = document.getElementById('action-items');
+        if (actionItems) {
+          var skeletonActions = '';
+          for (var j = 0; j < 3; j++) {
+            skeletonActions += '<div class="cc-action-item">' +
+              '<div class="cc-skeleton" style="width:8px;height:8px;border-radius:50%;"></div>' +
+              '<div style="flex:1;">' +
+                '<div class="cc-skeleton cc-skeleton-text long"></div>' +
+                '<div class="cc-skeleton cc-skeleton-text short"></div>' +
+              '</div>' +
+            '</div>';
+          }
+          actionItems.innerHTML = skeletonActions;
+        }
+      }
+
       function loadInventory(page) {
         page = page || State.inventory.page;
-        showLoading();
+
+        // Show skeleton loaders (P3-4)
+        showInventorySkeleton();
+
+        // Capture current request version for cancellation check (P3-6)
+        var requestVersion = ++State.requestVersions.inventory;
 
         google.script.run
           .withSuccessHandler(function(data) {
-            hideLoading();
+            // Check if this request is still valid (P3-6)
+            if (requestVersion !== State.requestVersions.inventory) {
+              console.log('Inventory request cancelled - stale version');
+              return;
+            }
             State.inventory.items = data.items || [];
             State.inventory.allItems = data.items || [];
             State.inventory.page = data.page;
@@ -1776,13 +2016,47 @@
           .getInventory({ page: page, pageSize: State.settings.pageSize });
       }
 
+      function showInventorySkeleton() {
+        var container = document.getElementById('inventory-grid');
+        if (!container) return;
+
+        var skeletonCards = '';
+        for (var i = 0; i < 6; i++) {
+          skeletonCards += '<div class="cc-skeleton-item-card">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+              '<div class="cc-skeleton cc-skeleton-text medium"></div>' +
+              '<div class="cc-skeleton cc-skeleton-badge"></div>' +
+            '</div>' +
+            '<div style="display:flex;gap:8px;margin-bottom:8px;">' +
+              '<div class="cc-skeleton cc-skeleton-badge" style="width:50px;"></div>' +
+              '<div class="cc-skeleton cc-skeleton-badge" style="width:70px;"></div>' +
+            '</div>' +
+            '<div class="cc-skeleton cc-skeleton-bar"></div>' +
+            '<div style="display:flex;justify-content:space-between;margin-top:8px;">' +
+              '<div class="cc-skeleton cc-skeleton-text short"></div>' +
+              '<div class="cc-skeleton cc-skeleton-text short"></div>' +
+            '</div>' +
+          '</div>';
+        }
+        container.innerHTML = skeletonCards;
+      }
+
       function loadSales(page) {
         page = page || State.sales.page;
-        showLoading();
+
+        // Show skeleton loaders (P3-4)
+        showSalesSkeleton();
+
+        // Capture current request version for cancellation check (P3-6)
+        var requestVersion = ++State.requestVersions.sales;
 
         google.script.run
           .withSuccessHandler(function(data) {
-            hideLoading();
+            // Check if this request is still valid (P3-6)
+            if (requestVersion !== State.requestVersions.sales) {
+              console.log('Sales request cancelled - stale version');
+              return;
+            }
             State.sales.items = data.sales || [];
             State.sales.page = data.page;
             State.sales.totalPages = data.totalPages;
@@ -1790,6 +2064,27 @@
           })
           .withFailureHandler(handleError)
           .getSales({ page: page, pageSize: State.settings.pageSize });
+      }
+
+      function showSalesSkeleton() {
+        var container = document.getElementById('sales-list');
+        if (!container) return;
+
+        var skeletonCards = '';
+        for (var i = 0; i < 5; i++) {
+          skeletonCards += '<div class="cc-skeleton-sale-card">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+              '<div class="cc-skeleton cc-skeleton-text medium"></div>' +
+              '<div class="cc-skeleton cc-skeleton-badge"></div>' +
+            '</div>' +
+            '<div class="cc-skeleton cc-skeleton-text short" style="margin-bottom:8px;"></div>' +
+            '<div style="display:flex;gap:16px;">' +
+              '<div class="cc-skeleton cc-skeleton-text short"></div>' +
+              '<div class="cc-skeleton cc-skeleton-text short"></div>' +
+            '</div>' +
+          '</div>';
+        }
+        container.innerHTML = skeletonCards;
       }
 
       function loadFormDropdowns() {
@@ -1936,8 +2231,20 @@
       }
 
       function loadWeeklySales() {
+        // Show skeleton loaders (P3-4)
+        showWeeklySalesSkeleton();
+
+        // Capture current request version for cancellation check (P3-6)
+        var requestVersion = ++State.requestVersions.tools;
+
         google.script.run
           .withSuccessHandler(function(weeks) {
+            // Check if this request is still valid (P3-6)
+            if (requestVersion !== State.requestVersions.tools) {
+              console.log('Weekly sales request cancelled - stale version');
+              return;
+            }
+
             var container = document.getElementById('weekly-sales-table');
             if (!weeks || weeks.length === 0) {
               container.innerHTML = '<div class="cc-empty-state"><div class="cc-empty-text">No sales data</div></div>';
@@ -1964,12 +2271,59 @@
           .getWeeklySales(12);
       }
 
+      function showWeeklySalesSkeleton() {
+        var container = document.getElementById('weekly-sales-table');
+        if (!container) return;
+
+        var skeletonRows = '<div style="padding:8px 0;">';
+        // Header row
+        skeletonRows += '<div class="cc-skeleton-table-row" style="background:var(--gray-50);">' +
+          '<div class="cc-skeleton cc-skeleton-table-cell"></div>' +
+          '<div class="cc-skeleton cc-skeleton-table-cell"></div>' +
+          '<div class="cc-skeleton cc-skeleton-table-cell"></div>' +
+          '<div class="cc-skeleton cc-skeleton-table-cell"></div>' +
+        '</div>';
+        // Data rows
+        for (var i = 0; i < 6; i++) {
+          skeletonRows += '<div class="cc-skeleton-table-row">' +
+            '<div class="cc-skeleton cc-skeleton-table-cell"></div>' +
+            '<div class="cc-skeleton cc-skeleton-table-cell"></div>' +
+            '<div class="cc-skeleton cc-skeleton-table-cell"></div>' +
+            '<div class="cc-skeleton cc-skeleton-table-cell"></div>' +
+          '</div>';
+        }
+        skeletonRows += '</div>';
+        container.innerHTML = skeletonRows;
+      }
+
       // ============================================================================
       // RENDERING
       // ============================================================================
       function renderDashboard(data) {
         var inv = data.inventory || {};
         var sales = data.sales || {};
+
+        // Restore stats cards structure if it was replaced by skeleton
+        var statsGrid = document.querySelector('#dashboard-panel .cc-cards-grid');
+        if (statsGrid && !document.getElementById('stat-revenue')) {
+          statsGrid.innerHTML =
+            '<div class="cc-stat-card">' +
+              '<div class="cc-stat-label">Weekly Revenue</div>' +
+              '<div class="cc-stat-value" id="stat-revenue">$0</div>' +
+            '</div>' +
+            '<div class="cc-stat-card">' +
+              '<div class="cc-stat-label">Total Items</div>' +
+              '<div class="cc-stat-value" id="stat-items">0</div>' +
+            '</div>' +
+            '<div class="cc-stat-card">' +
+              '<div class="cc-stat-label">Available</div>' +
+              '<div class="cc-stat-value" id="stat-available">0</div>' +
+            '</div>' +
+            '<div class="cc-stat-card">' +
+              '<div class="cc-stat-label">Inventory Value</div>' +
+              '<div class="cc-stat-value" id="stat-value">$0</div>' +
+            '</div>';
+        }
 
         // Stats
         document.getElementById('stat-revenue').textContent = '$' + formatNumber(sales.weeklyRevenue || 0);
@@ -2037,8 +2391,20 @@
       }
 
       function initCharts(data) {
+        // Restore chart canvases if they were replaced by skeleton
+        var catWrapper = document.querySelector('.cc-chart-card:first-child .cc-chart-wrapper');
+        var revWrapper = document.querySelector('.cc-chart-card:last-child .cc-chart-wrapper');
+
+        if (catWrapper && !document.getElementById('category-chart')) {
+          catWrapper.innerHTML = '<canvas id="category-chart"></canvas>';
+        }
+        if (revWrapper && !document.getElementById('revenue-chart')) {
+          revWrapper.innerHTML = '<canvas id="revenue-chart"></canvas>';
+        }
+
         // Category Chart
         var catCanvas = document.getElementById('category-chart');
+        if (!catCanvas) return;
         if (charts.category) charts.category.destroy();
 
         var catData = data.categoryPerformance || [];
@@ -2066,6 +2432,7 @@
 
         // Revenue Chart
         var revCanvas = document.getElementById('revenue-chart');
+        if (!revCanvas) return;
         if (charts.revenue) charts.revenue.destroy();
 
         var revData = data.weeklyRevenue || [];
@@ -2582,6 +2949,138 @@
         document.getElementById('setting-default-location').value = '';
 
         showToast('Settings reset to defaults', 'success');
+      }
+
+      // ============================================================================
+      // PASSPHRASE / ACCESS CONTROL SETTINGS
+      // ============================================================================
+      function loadPassphraseSettings() {
+        google.script.run
+          .withSuccessHandler(function(settings) {
+            if (settings && !settings.error) {
+              // Show the access control section (user is owner/admin)
+              document.getElementById('access-control-section').style.display = 'block';
+
+              var modeSelect = document.getElementById('setting-passphrase-mode');
+              var staticInput = document.getElementById('setting-static-passphrase');
+              var seedInput = document.getElementById('setting-passphrase-seed');
+              var expiryInput = document.getElementById('setting-passphrase-expiry');
+              var todaysCode = document.getElementById('todays-passphrase');
+
+              if (modeSelect) modeSelect.value = settings.mode || 'static';
+              if (staticInput) staticInput.value = settings.staticPassphrase || '';
+              if (seedInput) seedInput.value = settings.seed || '';
+              if (expiryInput) expiryInput.value = settings.expiryHours || 24;
+              if (todaysCode && settings.todaysPassphrase) {
+                todaysCode.innerHTML = '<strong>Today\'s Code:</strong> ' + settings.todaysPassphrase;
+              }
+
+              togglePassphraseMode(settings.mode || 'static');
+
+              // Set up mode change listener
+              if (modeSelect) {
+                modeSelect.onchange = function() {
+                  togglePassphraseMode(this.value);
+                };
+              }
+            }
+          })
+          .withFailureHandler(function(err) {
+            // Not admin - keep section hidden
+            console.log('Passphrase settings not available:', err);
+          })
+          .getPassphraseSettings();
+      }
+
+      function togglePassphraseMode(mode) {
+        var staticGroup = document.getElementById('static-passphrase-group');
+        var dailyGroup = document.getElementById('daily-passphrase-group');
+
+        if (mode === 'daily') {
+          if (staticGroup) staticGroup.style.display = 'none';
+          if (dailyGroup) dailyGroup.style.display = 'block';
+        } else {
+          if (staticGroup) staticGroup.style.display = 'block';
+          if (dailyGroup) dailyGroup.style.display = 'none';
+        }
+      }
+
+      function savePassphraseSettings() {
+        var mode = document.getElementById('setting-passphrase-mode').value;
+        var staticPass = document.getElementById('setting-static-passphrase').value;
+        var seed = document.getElementById('setting-passphrase-seed').value;
+        var expiry = parseInt(document.getElementById('setting-passphrase-expiry').value, 10);
+
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result && result.success) {
+              showToast('Access settings saved', 'success');
+              loadPassphraseSettings(); // Reload to show today's code if daily
+            } else {
+              showToast(result.error || 'Failed to save settings', 'error');
+            }
+          })
+          .withFailureHandler(handleError)
+          .setPassphraseSettings({
+            mode: mode,
+            staticPassphrase: staticPass,
+            seed: seed,
+            expiryHours: expiry
+          });
+      }
+
+      function openWebApp() {
+        google.script.run
+          .withSuccessHandler(function(url) {
+            if (url) {
+              window.open(url, '_blank');
+            } else {
+              showToast('Web app URL not set. Please set it in Settings.', 'error');
+            }
+          })
+          .withFailureHandler(handleError)
+          .getWebAppUrl();
+      }
+
+      function loadWebAppUrl() {
+        google.script.run
+          .withSuccessHandler(function(isOwner) {
+            if (isOwner) {
+              // Show URL section for admin
+              document.getElementById('webapp-url-section').style.display = 'block';
+              // Load current URL
+              google.script.run
+                .withSuccessHandler(function(url) {
+                  if (url) {
+                    document.getElementById('setting-webapp-url').value = url;
+                  }
+                })
+                .getWebAppUrl();
+            }
+          })
+          .isOwner();
+      }
+
+      function saveWebAppUrl() {
+        var url = document.getElementById('setting-webapp-url').value.trim();
+        if (!url) {
+          showToast('Please enter a URL', 'error');
+          return;
+        }
+        if (!url.startsWith('https://script.google.com/')) {
+          showToast('Invalid Apps Script URL', 'error');
+          return;
+        }
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result && result.success) {
+              showToast('Web app URL saved', 'success');
+            } else {
+              showToast(result.error || 'Failed to save URL', 'error');
+            }
+          })
+          .withFailureHandler(handleError)
+          .setWebAppUrl(url);
       }
 
       // ============================================================================
