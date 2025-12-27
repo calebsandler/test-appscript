@@ -26,7 +26,7 @@ const DataService = (function () {
     }
   }
 
-  function setCache(key, data, ttl = CONFIG.PERFORMANCE.CACHE_TTL) {
+  function setCache(key, data, ttl = CONFIG.PERFORMANCE.CACHE_TTL.default) {
     try {
       cache.put(key, JSON.stringify(data), ttl);
     } catch (e) {
@@ -431,32 +431,44 @@ const DataService = (function () {
 
   /**
    * Update multiple rows at once
+   * Processes updates in chunks to avoid holding the lock too long
    */
   function batchUpdate(sheetConfig, updates) {
     // updates is array of { id, changes }
     const results = [];
-    let lock = null;
+    const CHUNK_SIZE = 50;
 
-    try {
-      lock = LockService.getScriptLock();
-      lock.waitLock(30000);
+    // Process updates in chunks
+    for (let i = 0; i < updates.length; i += CHUNK_SIZE) {
+      const chunk = updates.slice(i, i + CHUNK_SIZE);
+      let lock = null;
 
-      updates.forEach(({ id, changes }) => {
-        try {
-          const result = update(sheetConfig, id, changes);
-          results.push({ id, success: true, data: result });
-        } catch (e) {
-          results.push({ id, success: false, error: e.message });
-        }
-      });
-    } catch (e) {
-      throw e;
-    } finally {
-      if (lock) {
-        try {
-          lock.releaseLock();
-        } catch (e) {
-          console.warn(`[LOCK] Failed to release lock in batchUpdate: ${e.message}`);
+      try {
+        lock = LockService.getScriptLock();
+        lock.waitLock(30000);
+
+        chunk.forEach(({ id, changes }) => {
+          try {
+            const result = update(sheetConfig, id, changes);
+            results.push({ id, success: true, data: result });
+          } catch (e) {
+            results.push({ id, success: false, error: e.message });
+          }
+        });
+      } catch (e) {
+        // If we fail to acquire lock, mark remaining items in chunk as failed
+        chunk.forEach(({ id }) => {
+          if (!results.find((r) => r.id === id)) {
+            results.push({ id, success: false, error: e.message });
+          }
+        });
+      } finally {
+        if (lock) {
+          try {
+            lock.releaseLock();
+          } catch (e) {
+            console.warn(`[LOCK] Failed to release lock in batchUpdate: ${e.message}`);
+          }
         }
       }
     }
@@ -561,20 +573,57 @@ const DataService = (function () {
   // PUBLIC: Activity Logging
   // ─────────────────────────────────────────────────────────────────────────
 
+  // Private buffer for activity log entries
+  let _logBuffer = [];
+  const LOG_BUFFER_SIZE = 50;
+
   function logActivity(action, entityType, entityId, details) {
     try {
-      const sheet = getSheet(CONFIG.SHEETS.ACTIVITY_LOG);
-      sheet.appendRow([
+      const entry = [
         new Date(),
         action,
         entityType,
         entityId || "",
         JSON.stringify(details || {}),
         Session.getActiveUser().getEmail() || "system",
-      ]);
+      ];
+
+      _logBuffer.push(entry);
+
+      // Flush buffer when it reaches the size limit
+      if (_logBuffer.length >= LOG_BUFFER_SIZE) {
+        flushActivityLog();
+      }
     } catch (e) {
       // Don't let logging errors break operations
       console.log("Activity log error:", e.message);
+    }
+  }
+
+  /**
+   * Flush all buffered activity log entries to the sheet at once
+   * Call this at the end of bulk operations to ensure all entries are written
+   */
+  function flushActivityLog() {
+    if (_logBuffer.length === 0) return;
+
+    try {
+      const sheet = getSheet(CONFIG.SHEETS.ACTIVITY_LOG);
+      const entries = _logBuffer.slice(); // Copy buffer
+      _logBuffer = []; // Clear buffer immediately to avoid duplicates
+
+      if (entries.length === 1) {
+        sheet.appendRow(entries[0]);
+      } else {
+        const lastRow = sheet.getLastRow();
+        sheet
+          .getRange(lastRow + 1, 1, entries.length, entries[0].length)
+          .setValues(entries);
+      }
+    } catch (e) {
+      console.log("Activity log flush error:", e.message);
+      // Re-add entries to buffer if flush failed
+      _logBuffer = _logBuffer.concat(entries);
     }
   }
 
@@ -644,6 +693,7 @@ const DataService = (function () {
     getWeekId,
     getWeekDates,
     logActivity,
+    flushActivityLog,
 
     // Direct sheet access (for advanced operations)
     getSheet,

@@ -257,7 +257,15 @@ const CONFIG = {
   // PERFORMANCE SETTINGS
   // ─────────────────────────────────────────────────────────────────────────
   PERFORMANCE: {
-    CACHE_TTL: 300, // 5 minutes in seconds
+    CACHE_TTL: {
+      quick_stats: 120,
+      health: 300,
+      today: 60,
+      actions: 300,
+      charts: 300,
+      recent: 60,
+      default: 300,
+    },
     PAGE_SIZE: 30,
     DEBOUNCE_MS: 400,
     BATCH_SIZE: 100,

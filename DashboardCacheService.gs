@@ -14,16 +14,8 @@ const DashboardCacheService = (function () {
   let _metricsCacheTime = null;
   const METRICS_CACHE_TTL = 5000; // 5 seconds within execution
 
-  // Cache configuration with TTLs in seconds
-  const CACHE_TTL = {
-    quick_stats: 120,
-    health: 300,
-    today: 60,
-    actions: 300,
-    charts: 300,
-    recent: 60,
-    default: 300,
-  };
+  // Cache configuration with TTLs in seconds (from Config.gs)
+  const CACHE_TTL = CONFIG.PERFORMANCE.CACHE_TTL;
 
   const METRIC_CONFIG = {
     // Quick stats (shown immediately)
@@ -267,10 +259,32 @@ const DashboardCacheService = (function () {
       }
     });
 
-    // Batch update existing rows
-    updates.forEach(({ row, data }) => {
-      sheet.getRange(row, 1, 1, data.length).setValues([data]);
-    });
+    // Batch update existing rows (optimized to minimize setValues calls)
+    if (updates.length > 0) {
+      // Sort by row to enable contiguous grouping
+      updates.sort((a, b) => a.row - b.row);
+
+      // Group contiguous rows for batch writes
+      let groupStart = 0;
+      while (groupStart < updates.length) {
+        let groupEnd = groupStart;
+
+        // Find contiguous rows
+        while (
+          groupEnd < updates.length - 1 &&
+          updates[groupEnd + 1].row === updates[groupEnd].row + 1
+        ) {
+          groupEnd++;
+        }
+
+        // Write this contiguous group in one call
+        const groupData = updates.slice(groupStart, groupEnd + 1).map(u => u.data);
+        const startRow = updates[groupStart].row;
+        sheet.getRange(startRow, 1, groupData.length, groupData[0].length).setValues(groupData);
+
+        groupStart = groupEnd + 1;
+      }
+    }
 
     // Batch insert new rows
     if (inserts.length > 0) {

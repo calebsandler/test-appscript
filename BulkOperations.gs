@@ -8,6 +8,9 @@
 
 const BulkOperations = (function() {
 
+  // Flush interval to prevent Apps Script timeout on large batches
+  const FLUSH_INTERVAL = 50;
+
   // ─────────────────────────────────────────────────────────────────────────
   // BULK INVENTORY OPERATIONS
   // ─────────────────────────────────────────────────────────────────────────
@@ -128,6 +131,11 @@ const BulkOperations = (function() {
         const result = DataService.update(CONFIG.SHEETS.INVENTORY, update.id, update.changes);
         results.success.push({ id: update.id, result });
         results.processedIds.push(update.id);
+
+        // Flush pending changes to prevent timeout
+        if ((index + 1) % FLUSH_INTERVAL === 0) {
+          SpreadsheetApp.flush();
+        }
       } catch (e) {
         // Log partial success if error occurs mid-batch
         if (results.processedIds.length > 0) {
@@ -189,6 +197,11 @@ const BulkOperations = (function() {
         DataService.remove(CONFIG.SHEETS.INVENTORY, id, hardDelete);
         results.success.push(id);
         results.processedIds.push(id);
+
+        // Flush pending changes to prevent timeout
+        if ((index + 1) % FLUSH_INTERVAL === 0) {
+          SpreadsheetApp.flush();
+        }
       } catch (e) {
         // Log partial success if error occurs mid-batch
         if (results.processedIds.length > 0) {
@@ -326,12 +339,19 @@ const BulkOperations = (function() {
       processedPairs: [] // Track for rollback
     };
 
+    let operationCount = 0;
     itemIds.forEach((itemId, itemIndex) => {
       tagIds.forEach((tagId, tagIndex) => {
         try {
           InventoryService.tagItem(itemId, tagId);
           results.success.push({ itemId, tagId });
           results.processedPairs.push({ itemId, tagId });
+          operationCount++;
+
+          // Flush pending changes to prevent timeout
+          if (operationCount % FLUSH_INTERVAL === 0) {
+            SpreadsheetApp.flush();
+          }
         } catch (e) {
           // Log partial success if error occurs mid-batch
           if (results.processedPairs.length > 0) {
@@ -499,6 +519,11 @@ const BulkOperations = (function() {
         const saleId = SalesService.recordSale(sale);
         results.success.push({ id: saleId, sale });
         results.processedIds.push(saleId);
+
+        // Flush pending changes to prevent timeout
+        if ((index + 1) % FLUSH_INTERVAL === 0) {
+          SpreadsheetApp.flush();
+        }
       } catch (e) {
         // Log partial success if error occurs mid-batch
         if (results.processedIds.length > 0) {
@@ -552,6 +577,11 @@ const BulkOperations = (function() {
 
         results.success.push({ saleId, itemId, amount: item.Price });
         results.processedIds.push(saleId);
+
+        // Flush pending changes to prevent timeout
+        if ((index + 1) % FLUSH_INTERVAL === 0) {
+          SpreadsheetApp.flush();
+        }
       } catch (e) {
         // Log partial success if error occurs mid-batch
         if (results.processedIds.length > 0) {
@@ -603,6 +633,11 @@ const BulkOperations = (function() {
 
       const newId = DataService.insert(CONFIG.SHEETS.INVENTORY, newItem);
       newIds.push(newId);
+
+      // Flush pending changes to prevent timeout
+      if ((i + 1) % FLUSH_INTERVAL === 0) {
+        SpreadsheetApp.flush();
+      }
     }
 
     return newIds;
@@ -630,6 +665,11 @@ const BulkOperations = (function() {
         const newIds = duplicateItem(id);
         results.success.push({ originalId: id, newIds });
         results.processedIds.push(...newIds);
+
+        // Flush pending changes to prevent timeout
+        if ((index + 1) % FLUSH_INTERVAL === 0) {
+          SpreadsheetApp.flush();
+        }
       } catch (e) {
         // Log partial success if error occurs mid-batch
         if (results.processedIds.length > 0) {
@@ -677,6 +717,11 @@ const BulkOperations = (function() {
           results.errors.push({ item, error: e.message });
         }
         results.processed++;
+
+        // Flush pending changes to prevent timeout
+        if (results.processed % FLUSH_INTERVAL === 0) {
+          SpreadsheetApp.flush();
+        }
       });
     });
 
@@ -736,10 +781,15 @@ const BulkOperations = (function() {
       errors: []
     };
 
-    lastOp.previousStates.forEach(state => {
+    lastOp.previousStates.forEach((state, index) => {
       try {
         DataService.update(CONFIG.SHEETS.INVENTORY, state.Item_ID, state);
         results.restored.push(state.Item_ID);
+
+        // Flush pending changes to prevent timeout
+        if ((index + 1) % FLUSH_INTERVAL === 0) {
+          SpreadsheetApp.flush();
+        }
       } catch (e) {
         results.errors.push({ id: state.Item_ID, error: e.message });
       }
