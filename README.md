@@ -295,7 +295,7 @@ graph LR
 
     subgraph "✅ Lookup Map Pattern"
         B1[Batch Load] --> M1[Build Map]
-        M1 --> L2[Loop with O(1) Lookup]
+        M1 --> L2["Loop with O(1) Lookup"]
     end
 ```
 
@@ -425,7 +425,7 @@ pie title Health Score Components
 flowchart TD
     START([User Access]) --> CHECK_OWNER{Script Owner?}
     CHECK_OWNER -->|Yes| GRANTED[✅ Access Granted]
-    CHECK_OWNER -->|No| CHECK_DOMAIN{@calebsandler.com?}
+    CHECK_OWNER -->|No| CHECK_DOMAIN{"@calebsandler.com?"}
     CHECK_DOMAIN -->|Yes| GRANTED
     CHECK_DOMAIN -->|No| CHECK_PASS{Valid Passphrase?}
     CHECK_PASS -->|Yes| GRANTED
